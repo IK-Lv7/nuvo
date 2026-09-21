@@ -3,6 +3,7 @@ import {
   GestureResponderEvent, Image, PanResponder, PanResponderGestureState, StyleSheet, Text, View,
 } from 'react-native';
 import { cropOptions, textStyles } from '../catalog';
+import { faceIndexAt, mockFaces, type Point } from '../people';
 import type { Params, TextItem } from '../state';
 import { theme } from '../theme';
 
@@ -52,17 +53,20 @@ function TextLayer({ item, width, height }: { item: TextItem; width: number; hei
 
 type Props = {
   uri: string; params: Params; isHealing: boolean; isEditingText: boolean; selectedTextId: string | null;
-  isMovingCrop: boolean; showsHint: boolean; resetKey: number;
+  isMovingCrop: boolean; isSelectingPeople: boolean; showsHint: boolean; resetKey: number;
+  onTapFace: (index: number) => void; onLasso: (points: Point[]) => void;
   onTapPhoto: () => void; onMoveCrop: (dx: number, dy: number) => void; onMoveCropEnd: () => void; onMoveText: (id: string, x: number, y: number) => void; onMoveTextEnd: () => void;
 };
 
 const MAX_SCALE = 6;
 
 /** ピンチで拡大、ドラッグで移動、ダブルタップで元に戻る。長押しで元の写真に切り替わる(CanvasView.swift に対応)。 */
-export function Canvas({ uri, params, isHealing, isEditingText, isMovingCrop, selectedTextId, showsHint, resetKey, onTapPhoto, onMoveCrop, onMoveCropEnd, onMoveText, onMoveTextEnd }: Props) {
+export function Canvas({ uri, params, isHealing, isEditingText, isMovingCrop, isSelectingPeople, onTapFace, onLasso, selectedTextId, showsHint, resetKey, onTapPhoto, onMoveCrop, onMoveCropEnd, onMoveText, onMoveTextEnd }: Props) {
   const [image, setImage] = useState<{ w: number; h: number } | null>(null);
   const [area, setArea] = useState({ w: 0, h: 0 });
   const [isComparing, setIsComparing] = useState(false);
+  const [lasso, setLasso] = useState<Point[]>([]);
+  const lassoRef = useRef<Point[]>([]);
   const [zoom, setZoom] = useState({ scale: 1, x: 0, y: 0 });
   const outerRef = useRef<View>(null);
   const outerOrigin = useRef({ x: 0, y: 0 });
@@ -92,8 +96,8 @@ export function Canvas({ uri, params, isHealing, isEditingText, isMovingCrop, se
   const center = { x: Math.min(Math.max(params.cropCenter.x, halfWindow), 1 - halfWindow), y: Math.min(Math.max(params.cropCenter.y, halfWindow), 1 - halfWindow) };
 
   // ジェスチャー。PanResponder は一度だけ作るため、最新の値は ref 経由で読む。
-  const latest = useRef({ params, isHealing, isEditingText, isMovingCrop, selectedTextId, area, zoom, onTapPhoto, onMoveCrop, onMoveCropEnd, onMoveText, onMoveTextEnd });
-  latest.current = { params, isHealing, isEditingText, isMovingCrop, selectedTextId, area, zoom, onTapPhoto, onMoveCrop, onMoveCropEnd, onMoveText, onMoveTextEnd };
+  const latest = useRef({ params, isHealing, isEditingText, isMovingCrop, isSelectingPeople, onTapFace, onLasso, selectedTextId, area, zoom, onTapPhoto, onMoveCrop, onMoveCropEnd, onMoveText, onMoveTextEnd });
+  latest.current = { params, isHealing, isEditingText, isMovingCrop, isSelectingPeople, onTapFace, onLasso, selectedTextId, area, zoom, onTapPhoto, onMoveCrop, onMoveCropEnd, onMoveText, onMoveTextEnd };
   const frameRef = useRef(frame);
   frameRef.current = frame;
   const gesture = useRef({ lastDx: 0, lastDy: 0, moved: false, timer: null as ReturnType<typeof setTimeout> | null, startDist: 0, startScale: 1, base: { x: 0, y: 0 }, lastTap: 0 });
@@ -131,18 +135,34 @@ export function Canvas({ uri, params, isHealing, isEditingText, isMovingCrop, se
           const f = frameRef.current;
           if (f.w > 0) c.onMoveCrop((s.dx - g.lastDx) / f.w, (s.dy - g.lastDy) / f.h);
           g.lastDx = s.dx; g.lastDy = s.dy;
+        } else if (c.isSelectingPeople) {
+          // 加工する人を選ぶ間は、ドラッグで囲む線を引く(拡大・移動は使わない)。
+          const f = frameRef.current;
+          if (f.w > 0 && g.moved) {
+            const point = { x: (e.nativeEvent.pageX - outerOrigin.current.x) / f.w, y: (e.nativeEvent.pageY - outerOrigin.current.y) / f.h };
+            lassoRef.current = [...lassoRef.current, point];
+            setLasso(lassoRef.current);
+          }
         } else if (c.zoom.scale > 1 && !c.isHealing) {
           const limitX = (c.zoom.scale - 1) * c.area.w / 2, limitY = (c.zoom.scale - 1) * c.area.h / 2;
           setZoom((z) => ({ ...z, x: Math.min(Math.max(g.base.x + s.dx, -limitX), limitX), y: Math.min(Math.max(g.base.y + s.dy, -limitY), limitY) }));
         }
       },
-      onPanResponderRelease: () => {
+      onPanResponderRelease: (e: GestureResponderEvent) => {
         const g = gesture.current, c = latest.current;
         cancelTimer(); setIsComparing(false);
         if (c.isEditingText) c.onMoveTextEnd();
         if (c.isMovingCrop) c.onMoveCropEnd();
+        if (c.isSelectingPeople) {
+          if (lassoRef.current.length > 0) c.onLasso(lassoRef.current);
+          lassoRef.current = []; setLasso([]);
+        }
         if (!g.moved) {
-          if (c.isHealing) c.onTapPhoto();
+          if (c.isSelectingPeople) {
+            const f = frameRef.current;
+            const i = f.w > 0 ? faceIndexAt({ x: (e.nativeEvent.pageX - outerOrigin.current.x) / f.w, y: (e.nativeEvent.pageY - outerOrigin.current.y) / f.h }) : null;
+            if (i !== null) c.onTapFace(i);
+          } else if (c.isHealing) c.onTapPhoto();
           else if (Date.now() - g.lastTap < 300) setZoom({ scale: 1, x: 0, y: 0 });
           g.lastTap = Date.now();
         }
@@ -171,6 +191,23 @@ export function Canvas({ uri, params, isHealing, isEditingText, isMovingCrop, se
             </View>
             {overlays(params).map((o, i) => (
               <View key={i} pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: o.color, opacity: o.opacity }]} />
+            ))}
+            {isSelectingPeople && mockFaces.map((f, i) => {
+              const on = !params.unselected.includes(i);
+              const d = Math.max(f.w * frame.w, f.h * frame.h) * 1.15;
+              return (
+                <View key={i} pointerEvents="none" style={{
+                  position: 'absolute', left: (f.x + f.w / 2) * frame.w - d / 2, top: (f.y + f.h / 2) * frame.h - d / 2,
+                  width: d, height: d, borderRadius: d / 2, borderWidth: on ? 3 : 1.5,
+                  borderColor: on ? theme.accent : 'rgba(255,255,255,0.7)', borderStyle: on ? 'solid' : 'dashed',
+                  backgroundColor: on ? 'transparent' : 'rgba(0,0,0,0.35)',
+                }}>
+                  <Text style={{ position: 'absolute', top: -6, right: -6, fontSize: 22, color: on ? theme.accent : 'rgba(255,255,255,0.8)' }}>{on ? '●' : '○'}</Text>
+                </View>
+              );
+            })}
+            {lasso.map((p, i) => (
+              <View key={`l${i}`} pointerEvents="none" style={{ position: 'absolute', left: p.x * frame.w - 2, top: p.y * frame.h - 2, width: 4, height: 4, borderRadius: 2, backgroundColor: theme.accent }} />
             ))}
             {params.texts.map((t) => <TextLayer key={t.id} item={t} width={frame.w} height={frame.h} />)}
           </View>

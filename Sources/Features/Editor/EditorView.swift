@@ -13,8 +13,18 @@ struct EditorView: View {
     @State private var showsSettings = false
     @State private var lookStore = LookStore()
 
+    /// 「加工する人」は、2 人以上が写っているときだけ出す。
+    private var categories: [ToolCategory] {
+        EditorCatalog.categories.filter { $0.id != "people" || viewModel.hasSeveralFaces }
+    }
+
     private var category: ToolCategory {
-        EditorCatalog.categories.first { $0.id == categoryID } ?? EditorCatalog.categories[0]
+        categories.first { $0.id == categoryID } ?? categories[0]
+    }
+
+    /// 顔の目印を出して、タップ・囲みで加工する人を選べる状態。構図を変えていると、顔の位置が合わないので使えない。
+    private var isSelectingPeople: Bool {
+        tool.id == "people" && viewModel.hasSeveralFaces && !viewModel.hasComposition
     }
 
     private var tool: EditorTool {
@@ -66,7 +76,7 @@ struct EditorView: View {
         VStack(spacing: 0) {
             EditorTopBar(viewModel: viewModel, pickerItem: $pickerItem, onSettings: { showsSettings = true })
             CanvasView(viewModel: viewModel, isHealing: isHealing, isEditingText: isEditingText,
-                       isMovingCrop: isMovingCrop, showsHint: showsHint)
+                       isMovingCrop: isMovingCrop, isSelectingPeople: isSelectingPeople, showsHint: showsHint)
                 .id(viewModel.imageRevision)
             controls
         }
@@ -85,6 +95,10 @@ struct EditorView: View {
         .onChange(of: categoryID) { _, _ in
             toolID = category.tools[0].id
         }
+        .onChange(of: viewModel.hasSeveralFaces) { _, hasSeveral in
+            // 別の写真に替えて 1 人だけになったとき、消えたカテゴリを開いたままにしない。
+            if !hasSeveral && categoryID == "people" { categoryID = EditorCatalog.categories[0].id }
+        }
         .onChange(of: toolID) { _, _ in
             isHealing = false
         }
@@ -98,7 +112,7 @@ struct EditorView: View {
                 .padding(.horizontal, Theme.Spacing.l)
             ToolStrip(tools: category.tools, selectedID: $toolID,
                       isModified: { $0.isModified(viewModel.parameters) })
-            CategoryBar(categories: EditorCatalog.categories, selectedID: $categoryID)
+            CategoryBar(categories: categories, selectedID: $categoryID)
         }
         .padding(.top, 14)
         .background(.ultraThinMaterial, ignoresSafeAreaEdges: .bottom)

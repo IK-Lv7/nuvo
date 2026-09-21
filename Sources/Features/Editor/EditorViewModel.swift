@@ -39,6 +39,8 @@ final class EditorViewModel {
     private(set) var hasSubjectMask = false
     /// ポートレート写真の深度が使えるか。使えると、背景のぼかしが奥行きに沿う。
     private(set) var hasDepthMask = false
+    /// 検出した顔。複数人のとき、加工する人を選ぶ画面の目印に使う。
+    private(set) var detectedFaces: [FaceLandmarks] = []
     private(set) var selectedTextID: UUID?
     private(set) var batchProgress: BatchProgress?
     private(set) var lastBatch: BatchSummary?
@@ -76,6 +78,7 @@ final class EditorViewModel {
         let preview = renderer.downscaled(image)
         fullImage = image
         analysis = nil
+        detectedFaces = []
         sourceMetadata = renderer.readMetadata(from: data)
         previewSource = renderer.makeSource(image: preview)
         originalPreview = renderer.cgImage(from: preview)
@@ -336,6 +339,7 @@ final class EditorViewModel {
         }.value
         guard !Task.isCancelled else { return }
         analysis = result.0
+        detectedFaces = result.0.faces
         hasSubjectMask = result.0.subjectMask != nil
         hasDepthMask = result.0.depthMask != nil
         previewSource = result.1
@@ -348,7 +352,7 @@ final class EditorViewModel {
             idPhotoUnavailable = false
             return
         }
-        idPhotoUnavailable = previewSource?.idPhotoCropRect(spec) == nil
+        idPhotoUnavailable = previewSource?.idPhotoCropRect(spec, unselectedFaces: parameters.excludedFaces) == nil
     }
 
     /// 連続操作では前のレンダリングを捨て、最新のパラメータだけを描画する。

@@ -85,9 +85,16 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
 
     public var texts: [TextOverlay] = []
 
+    /// 加工の対象から外した顔の番号(検出順)。nil は全員が対象。
+    /// 保存済みのルックにこの項目が無くても読めるよう、空配列ではなく nil を「全員」とする。
+    public var unselectedFaces: [Int]?
+
     public init() {}
 
     /// 初期状態(未調整)か。書き出し時の無駄な再処理を避けるために使う。
+    /// 対象から外した顔の番号。全員が対象なら空。
+    public var excludedFaces: [Int] { unselectedFaces ?? [] }
+
     public var isIdentity: Bool { self == AdjustmentParameters() }
 
     var hasSkinOrMakeup: Bool {
@@ -134,7 +141,7 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
         min(max(value, range.lowerBound), range.upperBound)
     }
 
-    /// 「ルック」として保存・適用する範囲。写真ごとの内容(修復の位置・構図・文字・証明写真)は含めない。
+    /// 「ルック」として保存・適用する範囲。写真ごとの内容(修復の位置・構図・文字・証明写真・加工する人)は含めない。
     public func lookOnly() -> AdjustmentParameters {
         var look = self
         look.spots = []
@@ -146,6 +153,7 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
         look.cropZoom = 1
         look.cropCenter = CGPoint(x: 0.5, y: 0.5)
         look.idPhoto = nil
+        look.unselectedFaces = nil
         return look
     }
 
@@ -161,6 +169,7 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
         result.cropZoom = cropZoom
         result.cropCenter = cropCenter
         result.idPhoto = idPhoto
+        result.unselectedFaces = unselectedFaces
         return result
     }
 }

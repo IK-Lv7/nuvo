@@ -8,6 +8,8 @@ struct CanvasView: View {
     let isEditingText: Bool
     /// ズームの範囲を動かしている間(構図のズームを選択中で、1 倍より大きい)。
     let isMovingCrop: Bool
+    /// 「加工する人」を選んでいる間。顔に目印を出し、タップで入り切り、指で囲んで選べる。
+    var isSelectingPeople = false
     let showsHint: Bool
 
     @State private var scale: CGFloat = 1
@@ -40,7 +42,7 @@ struct CanvasView: View {
             .clipped()
             .gesture(zoomGesture(in: proxy.size))
             .simultaneousGesture(panGesture(in: proxy.size))
-            .onTapGesture(count: 2) { if !isHealing && !isEditingText && !isMovingCrop { resetZoom() } }
+            .onTapGesture(count: 2) { if !isHealing && !isEditingText && !isMovingCrop && !isSelectingPeople { resetZoom() } }
             .onLongPressGesture(minimumDuration: 0.3, perform: {}, onPressingChanged: { pressing in
                 viewModel.isComparing = pressing
             })
@@ -69,7 +71,7 @@ struct CanvasView: View {
     private func panGesture(in size: CGSize) -> some Gesture {
         DragGesture()
             .onChanged { value in
-                guard scale > 1, !isEditingText, !isHealing, !isMovingCrop else { return }
+                guard scale > 1, !isEditingText, !isHealing, !isMovingCrop, !isSelectingPeople else { return }
                 offset = clamped(CGSize(width: baseOffset.width + value.translation.width,
                                         height: baseOffset.height + value.translation.height), in: size)
             }
@@ -124,6 +126,8 @@ struct CanvasView: View {
                                 viewModel.commitEdit()
                             })
             }
+        } else if isSelectingPeople {
+            PeopleOverlay(viewModel: viewModel)
         } else if isEditingText {
             GeometryReader { geometry in
                 Color.clear

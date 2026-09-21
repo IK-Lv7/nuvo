@@ -30,6 +30,8 @@ struct ToolPanel: View {
             TextToolPanel(viewModel: viewModel)
         case .looks:
             LooksPanel(viewModel: viewModel, store: lookStore)
+        case .people:
+            peoplePanel
         }
     }
 
@@ -124,6 +126,27 @@ struct ToolPanel: View {
                 Text(count == 0 ? LocalizedStringKey("editor.autoHealNone")
                                 : LocalizedStringKey("editor.autoHealDone \(count)"))
                     .font(.footnote).foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var peoplePanel: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 10) {
+                Text("people.summary \(viewModel.selectedFaces.count) \(viewModel.detectedFaces.count)")
+                    .font(.subheadline.weight(.semibold))
+                    .monospacedDigit()
+                Button { viewModel.selectAllFaces() } label: {
+                    Label("people.all", systemImage: "person.2.fill")
+                }
+                .buttonStyle(PillButtonStyle())
+                .disabled(viewModel.parameters.excludedFaces.isEmpty)
+                .opacity(viewModel.parameters.excludedFaces.isEmpty ? 0.5 : 1)
+            }
+            if viewModel.hasComposition {
+                Text("people.blockedByComposition").font(.footnote).foregroundStyle(.orange)
+            } else {
+                Text("people.hint").font(.footnote).foregroundStyle(.secondary)
             }
         }
     }

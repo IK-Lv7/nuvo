@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { backgroundColors, cropOptions, filterOptions, idPhotoOptions, sliderDefault, type Tool } from '../catalog';
 import { hasComposition, type Params, type TextItem } from '../state';
+import { mockFaces, selectedFaces } from '../people';
 import { TextPanel } from './TextPanel';
 import { theme } from '../theme';
 import { Chip, Chips } from './Chips';
@@ -135,6 +136,21 @@ export function ToolPanel(props: Props) {
         </View>
       );
     }
+    case 'people': {
+      const blocked = hasComposition(params);
+      return (
+        <View style={styles.box}>
+          <View style={styles.row}>
+            <Text style={styles.summary}>{`${selectedFaces(params.unselected).length} 人を加工(全 ${mockFaces.length} 人)`}</Text>
+            <Chip title="全員" isOn={false} onPress={() => { if (params.unselected.length > 0) onCommit((p) => ({ ...p, unselected: [] })); }} />
+          </View>
+          <Text style={blocked ? styles.warn : styles.hint}>
+            {blocked ? '切り抜きや回転を変えている間は、加工する人を選べません。先に選んでください。'
+              : '顔をタップして入り切り。または、加工したい人を指で囲んでください。'}
+          </Text>
+        </View>
+      );
+    }
     case 'autoEnhance':
       return (
         <View style={styles.box}>
@@ -151,6 +167,7 @@ const styles = StyleSheet.create({
   box: { gap: 8 },
   row: { flexDirection: 'row', gap: 10 },
   value: { color: theme.text, fontSize: 20, fontWeight: '600', textAlign: 'center', fontVariant: ['tabular-nums'] },
+  summary: { color: theme.text, fontSize: 15, fontWeight: '600', alignSelf: 'center', fontVariant: ['tabular-nums'] },
   hint: { color: theme.textSecondary, fontSize: 13 },
   warn: { color: '#ff9f0a', fontSize: 13 },
 });

@@ -40,6 +40,8 @@ final class SkinRetouchLayers: @unchecked Sendable {
     /// 鼻筋のハイライトで、白へ寄せる割合の上限。強いと鼻だけが白く浮く。
     private static let noseBridgeLift: Float = 0.2
 
+    /// この領域が、写真の何番目の顔か。加工する人を選ぶときに、この番号で対象から外す。
+    let faceIndex: Int
     let roi: CGRect
     let width: Int
     let height: Int
@@ -49,7 +51,8 @@ final class SkinRetouchLayers: @unchecked Sendable {
     private let makeupMasks: MakeupMasks?
 
     init(roi: CGRect, width: Int, height: Int, original: [UInt8], smoothed: [UInt8],
-         mask: [UInt8], makeupMasks: MakeupMasks? = nil) {
+         mask: [UInt8], makeupMasks: MakeupMasks? = nil, faceIndex: Int = 0) {
+        self.faceIndex = faceIndex
         self.roi = roi
         self.width = width
         self.height = height

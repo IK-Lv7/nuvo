@@ -14,7 +14,8 @@ export type ToolKind =
   | { type: 'orientation' }
   | { type: 'aspect' }
   | { type: 'text' }
-  | { type: 'looks' };
+  | { type: 'looks' }
+  | { type: 'people' };
 
 export type Tool = { id: string; title: string; icon: IconName; kind: ToolKind };
 /** 操作部の高さ。ツールを切り替えても写真が上下に動かないよう、ツールごとに固定する(EditorTool.panelHeight と同じ値)。 */
@@ -39,6 +40,10 @@ export const categories: Category[] = [
     { id: 'skinFlush', title: '血色', icon: 'heart-outline', kind: both },
     { id: 'darkCircles', title: 'くま', icon: 'eye-outline', kind: intensity },
     { id: 'blemish', title: 'ニキビ', icon: 'bandage-outline', kind: { type: 'blemish' } },
+  ] },
+  // 実機では、2 人以上が写っている写真のときだけ出る。試作では顔検出をしないので、いつも出す。
+  { id: 'people', title: '人物', icon: 'people-outline', tools: [
+    { id: 'people', title: '加工する人', icon: 'people-circle-outline', kind: { type: 'people' } },
   ] },
   { id: 'face', title: '顔立ち', icon: 'person-circle-outline', tools: [
     { id: 'faceSlim', title: '小顔', icon: 'swap-horizontal-outline', kind: both },

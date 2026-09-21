@@ -20,7 +20,7 @@ final class SkinRetouch: @unchecked Sendable {
         let bounds = CGRect(origin: .zero, size: size)
         var layers: [SkinRetouchLayers] = []
 
-        for face in faces {
+        for (faceIndex, face) in faces.enumerated() {
             let polygon = FaceGeometry.scaled(FaceGeometry.skinPolygon(face), to: size)
             let margin = size.width * 0.01
             let rect = FaceGeometry.boundingRect(of: polygon)
@@ -39,7 +39,8 @@ final class SkinRetouch: @unchecked Sendable {
             let makeup = MakeupMasks.make(face: face, skinMask: mask, rgba: original, imageSize: size,
                                           roiOrigin: rect.origin, width: width, height: height)
             layers.append(SkinRetouchLayers(roi: rect, width: width, height: height, original: original,
-                                            smoothed: smoothed, mask: mask, makeupMasks: makeup))
+                                            smoothed: smoothed, mask: mask, makeupMasks: makeup,
+                                            faceIndex: faceIndex))
         }
         return layers.isEmpty ? nil : SkinRetouch(layers: layers)
     }
@@ -48,7 +49,8 @@ final class SkinRetouch: @unchecked Sendable {
         let makeup = MakeupAmounts(lips: p.lipstick, blush: p.blush, brows: p.eyebrow,
                                    teeth: p.teethWhitening, darkCircles: p.darkCircles, noseBridge: p.noseBridge)
         var result = image
-        for layer in layers {
+        let excluded = Set(p.excludedFaces)
+        for layer in layers where !excluded.contains(layer.faceIndex) {
             let pixels = layer.blended(smoothing: p.skinSmoothing, brightness: p.skinBrightness, makeup: makeup,
                                            flush: p.skinFlush)
             guard let patch = BitmapIO.cgImage(fromRGBA: pixels, width: layer.width, height: layer.height) else {

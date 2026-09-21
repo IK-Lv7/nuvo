@@ -193,6 +193,22 @@
         }
       }
     },
+    "category.people": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "People"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "人物"
+          }
+        }
+      }
+    },
     "category.skin": {
       "localizations": {
         "en": {
@@ -1905,6 +1921,118 @@
         }
       }
     },
+    "people.all": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everyone"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全員"
+          }
+        }
+      }
+    },
+    "people.blockedByComposition": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choosing people is unavailable while the crop or rotation is changed. Choose first."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切り抜きや回転を変えている間は、加工する人を選べません。先に選んでください。"
+          }
+        }
+      }
+    },
+    "people.faceLabel %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Person %lld"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 人目"
+          }
+        }
+      }
+    },
+    "people.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap a face to turn it on or off, or draw a circle around the people you want to edit."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "顔をタップして入り切り。または、加工したい人を指で囲んでください。"
+          }
+        }
+      }
+    },
+    "people.notSelected": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not editing"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加工しない"
+          }
+        }
+      }
+    },
+    "people.selected": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editing"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加工する"
+          }
+        }
+      }
+    },
+    "people.summary %lld %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editing %lld of %lld people"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 人を加工(全 %lld 人)"
+          }
+        }
+      }
+    },
     "settings.about": {
       "localizations": {
         "en": {
@@ -2781,6 +2909,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "回転・反転"
+          }
+        }
+      }
+    },
+    "tool.people": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who to edit"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加工する人"
           }
         }
       }

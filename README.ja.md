@@ -41,6 +41,9 @@ Nuvo は、ポートレートを「いちばん調子のいい日の自分」に
 **顔立ち**
 小顔、目の大きさ、あご、鼻。決まったひな形ではなく、あなた自身の顔のパーツに沿って整えます。
 
+**集合写真**
+複数人が写っている写真では、加工する人を選べます。顔をタップして入り切りしたり、加工したい人を指で囲んだりできます。選ばなかった人は、そのままです。
+
 **メイク**
 リップ、チーク、アイブロウ、歯のホワイトニング。顔に合わせて乗り、元の陰影や質感はそのまま残ります。
 
@@ -77,3 +80,7 @@ Nuvo は Swift と SwiftUI で書かれ、Apple 標準のフレームワーク(C
 - プロジェクトの方針とルールは [AGENTS.md](AGENTS.md) にあります。[CONTRIBUTING.md](CONTRIBUTING.md) もご覧ください。ルールは `scripts/check_policy.py` で自動的に確認されます。
 - アプリのプロジェクトは、`project.yml` から [XcodeGen](https://github.com/yonaskolb/XcodeGen) で生成します。コアのライブラリは、Mac で `swift test` によりテストできます。
 - [`prototype/`](prototype) は、画面づくりを素早く試すための、使い捨ての Expo 試作です。アプリの一部ではありません。
+
+## ライセンス
+
+[MIT](LICENSE) © Hinode Entertainment

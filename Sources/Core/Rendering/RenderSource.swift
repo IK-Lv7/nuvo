@@ -20,6 +20,10 @@ public final class RenderSource: @unchecked Sendable {
         self.depthMask = depthMask
     }
 
+    /// 検出した顔の数。加工する人を選ぶ操作は、2 人以上のときだけ意味がある。
+    public var faceCount: Int { faces.count }
+    public var faceBoxes: [CGRect] { faces.map(\.boundingBox) }
+
     public var hasSubjectMask: Bool { subjectMask != nil }
     public var hasDepthMask: Bool { depthMask != nil }
 
@@ -29,10 +33,9 @@ public final class RenderSource: @unchecked Sendable {
     }
 
     /// 証明写真の切り出し範囲(左上原点のピクセル座標)。顔が見つからない・画像内に収まらない場合は nil。
-    public func idPhotoCropRect(_ spec: IDPhotoSpec) -> CGRect? {
-        // 写真に複数人いる場合は、最も大きく写っている人を本人とみなす。
-        guard let face = faces.max(by: { $0.boundingBox.width * $0.boundingBox.height
-                                            < $1.boundingBox.width * $1.boundingBox.height }) else { return nil }
+    /// 複数人が写るときは、加工する人として選ばれている中で、最も大きく写っている人を本人とみなす。
+    public func idPhotoCropRect(_ spec: IDPhotoSpec, unselectedFaces: [Int] = []) -> CGRect? {
+        guard let face = FaceSelection.primary(faces, excluding: unselectedFaces) else { return nil }
         // 髪を含む頭頂は、人物マスクから顔の中央付近の最上端を実測する。
         let half = face.boundingBox.width * 0.3
         let crown = subjectMask?.topEdge(columns: (face.boundingBox.midX - half)...(face.boundingBox.midX + half))

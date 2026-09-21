@@ -22,11 +22,13 @@ export type Params = {
   /** ズーム(アップ)の中心。構図を決めた枠に対する相対位置(0...1、左上原点)。 */
   cropCenter: { x: number; y: number };
   texts: TextItem[];
+  /** 加工の対象から外した顔の番号。空なら全員が対象。 */
+  unselected: number[];
 };
 
 export const initialParams: Params = {
   values: {}, filter: null, filterIntensity: 1, bgColor: null, idPhoto: null, autoEnhance: false, spots: 0,
-  rotation: 0, flip: false, cropAspect: null, cropCenter: { x: 0.5, y: 0.5 }, texts: [],
+  rotation: 0, flip: false, cropAspect: null, cropCenter: { x: 0.5, y: 0.5 }, texts: [], unselected: [],
 };
 
 export function isModified(tool: Tool, p: Params): boolean {
@@ -41,6 +43,7 @@ export function isModified(tool: Tool, p: Params): boolean {
     case 'aspect': return p.cropAspect !== null;
     case 'text': return p.texts.length > 0;
     case 'looks': return false;
+    case 'people': return p.unselected.length > 0;
   }
 }
 
@@ -93,10 +96,10 @@ export function hasComposition(p: Params): boolean {
     || (p.values.cropZoom ?? 1) !== 1 || p.idPhoto !== null;
 }
 
-/** ルックとして保存する範囲。写真ごとの内容(修復・構図・文字・証明写真)は含めない(AdjustmentParameters.lookOnly と同じ)。 */
+/** ルックとして保存する範囲。写真ごとの内容(修復・構図・文字・証明写真・加工する人)は含めない(AdjustmentParameters.lookOnly と同じ)。 */
 export function lookOf(p: Params): Params {
   const { straighten: _straighten, cropZoom: _cropZoom, ...values } = p.values;
-  return { ...p, values, spots: 0, texts: [], rotation: 0, flip: false, cropAspect: null, cropCenter: { x: 0.5, y: 0.5 }, idPhoto: null };
+  return { ...p, values, spots: 0, texts: [], rotation: 0, flip: false, cropAspect: null, cropCenter: { x: 0.5, y: 0.5 }, idPhoto: null, unselected: [] };
 }
 
 /** ルックを当てる。この写真の修復・構図・文字・証明写真は保つ(AdjustmentParameters.applyingLook と同じ)。 */
@@ -107,5 +110,6 @@ export function applyingLook(current: Params, look: Params): Params {
   return {
     ...look, values, spots: current.spots, texts: current.texts, rotation: current.rotation,
     flip: current.flip, cropAspect: current.cropAspect, cropCenter: current.cropCenter, idPhoto: current.idPhoto,
+    unselected: current.unselected,
   };
 }

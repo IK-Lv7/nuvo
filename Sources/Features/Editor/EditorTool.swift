@@ -13,6 +13,7 @@ enum EditorToolKind {
     case aspect
     case text
     case looks
+    case people
 }
 
 struct EditorTool: Identifiable {
@@ -45,6 +46,7 @@ struct EditorTool: Identifiable {
         case .aspect: p.cropAspect != nil
         case .text: !p.texts.isEmpty
         case .looks: false
+        case .people: !p.excludedFaces.isEmpty
         }
     }
 }
@@ -70,6 +72,10 @@ enum EditorCatalog {
             EditorTool(id: "skinFlush", icon: "heart.fill", kind: .slider(\.skinFlush, both)),
             EditorTool(id: "darkCircles", icon: "eye", kind: .slider(\.darkCircles, intensity)),
             EditorTool(id: "blemish", icon: "bandage", kind: .blemish),
+        ]),
+        // 2 人以上が写っている写真のときだけ、画面に出る(EditorView)。
+        ToolCategory(id: "people", icon: "person.2", tools: [
+            EditorTool(id: "people", icon: "person.crop.circle.badge.checkmark", kind: .people),
         ]),
         ToolCategory(id: "face", icon: "person.crop.circle", tools: [
             EditorTool(id: "faceSlim", icon: "arrow.left.and.right", kind: .slider(\.faceSlim, both)),

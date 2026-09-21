@@ -41,6 +41,9 @@ Smooth skin, brighten it, add a healthy glow, and fade dark circles. Nuvo keeps 
 **Face and features**
 Slim the face, enlarge the eyes, refine the chin, and shape the nose — following your own facial features, not a generic template.
 
+**Group photos**
+When a photo has more than one person, choose whose face to retouch: tap a face to turn it on or off, or draw a circle around the people you want. Everyone else is left exactly as they are.
+
 **Makeup**
 Lipstick, blush, brows, and teeth whitening that stay put on your face and keep the natural highlights and texture underneath.
 
@@ -77,3 +80,7 @@ Nuvo is written in Swift and SwiftUI on top of Apple's own frameworks (Core Imag
 - The project's principles and rules are in [AGENTS.md](AGENTS.md); see also [CONTRIBUTING.md](CONTRIBUTING.md). The rules are checked automatically by `scripts/check_policy.py`.
 - The app project is generated with [XcodeGen](https://github.com/yonaskolb/XcodeGen) from `project.yml`; the core library can be tested with `swift test` on a Mac.
 - [`prototype/`](prototype) is a throwaway Expo mockup used to iterate on the interface. It is not part of the app.
+
+## License
+
+[MIT](LICENSE) © Hinode Entertainment

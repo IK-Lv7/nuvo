@@ -6,6 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { categories, panelHeight } from './src/catalog';
 import { Canvas } from './src/components/Canvas';
+import { indicesInsideLasso, selectedFaces, unselectedFrom } from './src/people';
 import { CategoryBar, ToolStrip } from './src/components/Navigation';
 import { SettingsModal } from './src/components/SettingsModal';
 import { EmptyState, TopBar } from './src/components/Screens';
@@ -99,6 +100,12 @@ function Editor() {
             canRedo={editor.canRedo} onSave={() => undefined} onSettings={() => setShowsSettings(true)}
             onShare={() => { if (uri) Share.share({ url: uri }); }} />
           <Canvas uri={uri} params={editor.params} isHealing={isHealing && !hasComposition(editor.params)} isEditingText={isEditingText} isMovingCrop={isMovingCrop}
+            isSelectingPeople={tool.id === 'people' && !hasComposition(editor.params)}
+            onTapFace={(i) => editor.commit((p) => {
+              const kept = selectedFaces(p.unselected);
+              return { ...p, unselected: unselectedFrom(kept.includes(i) ? kept.filter((k) => k !== i) : [...kept, i]) };
+            })}
+            onLasso={(points) => { const inside = indicesInsideLasso(points); if (inside.length > 0) editor.commit((p) => ({ ...p, unselected: unselectedFrom(inside) })); }}
             selectedTextId={selectedText?.id ?? null} showsHint={showsHint} resetKey={imageRevision}
             onTapPhoto={() => editor.commit((p) => ({ ...p, spots: p.spots + 1 }))}
             onMoveCrop={(dx, dy) => editor.change((p) => {

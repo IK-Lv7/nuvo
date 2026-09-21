@@ -32,8 +32,9 @@ public struct RenderPipeline: Sendable {
             // ポートレート写真では、深度から作ったマスクのほうが奥行きに沿った自然なぼけ方になる。
             image = BackgroundFilter.apply(blur: p.backgroundBlur, color: nil, mask: mask, to: image)
         }
-        if !source.faces.isEmpty {
-            image = FaceReshape.apply(faces: source.faces, parameters: p, to: image, context: context)
+        let faces = FaceSelection.selected(source.faces, excluding: p.excludedFaces)
+        if !faces.isEmpty {
+            image = FaceReshape.apply(faces: faces, parameters: p, to: image, context: context)
         }
         if !p.spots.isEmpty {
             image = SpotHealer.apply(p.spots, to: image, context: context)
@@ -53,7 +54,7 @@ public struct RenderPipeline: Sendable {
 
     /// 規格に合う範囲へ切り出し、原点を (0, 0) に戻す。範囲が求まらなければ切り出さない。
     private func cropForIDPhoto(_ p: AdjustmentParameters, source: RenderSource, image: CIImage) -> CIImage {
-        guard let spec = p.idPhoto, let rect = source.idPhotoCropRect(spec) else { return image }
+        guard let spec = p.idPhoto, let rect = source.idPhotoCropRect(spec, unselectedFaces: p.excludedFaces) else { return image }
         let extent = image.extent
         let ciRect = CGRect(x: extent.minX + rect.minX, y: extent.maxY - rect.maxY,
                             width: rect.width, height: rect.height)
