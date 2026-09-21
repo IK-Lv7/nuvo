@@ -1,0 +1,178 @@
+name: TestFlight
+
+# 手動実行のみ。誤って App Store Connect にビルドを上げないよう push では起動しない。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  upload:
+    runs-on: macos-15
+    env:
+      # 秘密情報はすべて GitHub Secrets から渡す。リポジトリには書かない。
+      TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 26 or later
+        # App Store Connect は iOS 26 SDK 以降(Xcode 26 以降)でのビルドを要求する。
+        # ランナーに入っている中で最も新しい Xcode 26 以降を選ぶ。無ければ一覧を出して止める。
+        run: |
+          latest=$(ls -d /Applications/Xcode_2[6-9]*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$latest" ]; then
+            echo "::error::No Xcode 26 or later on this runner. Installed:"
+            ls -d /Applications/Xcode*.app
+            exit 1
+          fi
+          sudo xcode-select -s "$latest/Contents/Developer"
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate project
+        run: xcodegen generate
+
+      - name: Check secrets are set
+        # 値は表示せず、未設定の名前だけを報告する。
+        run: |
+          missing=0
+          for name in TEAM_ID KEY_ID ISSUER_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Secret for $name is empty. Check the secret name in Settings > Secrets and variables > Actions."
+              missing=1
+            fi
+          done
+          exit $missing
+
+      - name: Write App Store Connect API key
+        env:
+          KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+        run: |
+          if [ -z "$KEY_P8_BASE64" ]; then
+            echo "::error::ASC_KEY_P8_BASE64 is empty. Register it as a repository secret with exactly this name."
+            exit 1
+          fi
+          # base64 に変換した値を想定するが、.p8 の中身をそのまま貼った場合も受け付ける。
+          if printf '%s' "$KEY_P8_BASE64" | grep -q 'BEGIN PRIVATE KEY'; then
+            pem=$(printf '%s' "$KEY_P8_BASE64")
+          else
+            pem=$(printf '%s' "$KEY_P8_BASE64" | tr -d ' \n\r' | base64 --decode) || {
+              echo "::error::ASC_KEY_P8_BASE64 is not valid base64. Re-create it with: base64 -w0 AuthKey_XXXX.p8"
+              exit 1
+            }
+          fi
+          # 貼り付けの過程で改行が空白に変わる・行が連結することがあるため、
+          # 本体だけを取り出して空白を除き、64 文字ごとに折り返した PEM を作り直す。
+          body=$(printf '%s' "$pem" | tr -d '\r' \
+            | sed -e 's/-----BEGIN PRIVATE KEY-----//' -e 's/-----END PRIVATE KEY-----//' \
+            | tr -d ' \n')
+          {
+            echo '-----BEGIN PRIVATE KEY-----'
+            printf '%s' "$body" | fold -w 64
+            echo
+            echo '-----END PRIVATE KEY-----'
+          } > "$RUNNER_TEMP/AuthKey.p8"
+          # 鍵の中身は表示せず、形だけを報告する。
+          echo "key body length: ${#body} chars, file lines: $(wc -l < "$RUNNER_TEMP/AuthKey.p8")"
+          openssl pkey -in "$RUNNER_TEMP/AuthKey.p8" -noout || {
+            echo "::error::The key could not be parsed. It may be truncated or not the AuthKey_*.p8 file. Re-copy the whole file."
+            exit 1
+          }
+          echo "KEY_PATH=$RUNNER_TEMP/AuthKey.p8" >> "$GITHUB_ENV"
+
+      - name: Verify App Store Connect API credentials
+        # Xcode を通さず同じ認証情報で API を直接呼び、Key ID・Issuer ID・.p8 の組み合わせを検証する。
+        # 表示するのは Key ID・Issuer ID の長さと、HTTP ステータス・Apple のエラー文だけ(値は出さない)。
+        run: |
+          echo "key id length: ${#KEY_ID} (expected 10)"
+          echo "issuer id length: ${#ISSUER_ID} (expected 36)"
+          python3 - <<'PY'
+          import base64, json, os, subprocess, time, urllib.request, urllib.error
+
+          def b64(data: bytes) -> str:
+              return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+          header = {"alg": "ES256", "kid": os.environ["KEY_ID"], "typ": "JWT"}
+          now = int(time.time())
+          payload = {"iss": os.environ["ISSUER_ID"], "iat": now, "exp": now + 600, "aud": "appstoreconnect-v1"}
+          signing_input = f"{b64(json.dumps(header).encode())}.{b64(json.dumps(payload).encode())}"
+
+          der = subprocess.run(
+              ["openssl", "dgst", "-sha256", "-sign", os.environ["KEY_PATH"]],
+              input=signing_input.encode(), capture_output=True, check=True).stdout
+
+          def read_len(buf, i):
+              if buf[i] < 0x80:
+                  return buf[i], i + 1
+              n = buf[i] & 0x7F
+              return int.from_bytes(buf[i + 1:i + 1 + n], "big"), i + 1 + n
+
+          # DER の ECDSA 署名(SEQUENCE { INTEGER r, INTEGER s })を、JWT が要求する r||s の 64 バイトに変換する。
+          _, i = read_len(der, 1)
+          ints = []
+          for _ in range(2):
+              length, i = read_len(der, i + 1)
+              ints.append(int.from_bytes(der[i:i + length], "big"))
+              i += length
+          signature = b"".join(v.to_bytes(32, "big") for v in ints)
+
+          token = f"{signing_input}.{b64(signature)}"
+          request = urllib.request.Request(
+              "https://api.appstoreconnect.apple.com/v1/apps?limit=1",
+              headers={"Authorization": f"Bearer {token}"})
+          try:
+              with urllib.request.urlopen(request) as response:
+                  print("App Store Connect API: HTTP", response.status, "(credentials are valid)")
+          except urllib.error.HTTPError as error:
+              body = error.read().decode(errors="replace")
+              print("App Store Connect API: HTTP", error.code)
+              print(body[:600])
+              raise SystemExit("::error::The API key, Key ID and Issuer ID do not match, or the key lacks access.")
+          PY
+
+      - name: Archive
+        # ビルド番号は実行回数で単調増加させる(同じ番号は再アップロードできないため)。
+        run: >
+          xcodebuild archive
+          -project Nuvo.xcodeproj -scheme Nuvo
+          -destination 'generic/platform=iOS'
+          -archivePath "$RUNNER_TEMP/Nuvo.xcarchive"
+          -allowProvisioningUpdates
+          -authenticationKeyPath "$KEY_PATH"
+          -authenticationKeyID "$KEY_ID"
+          -authenticationKeyIssuerID "$ISSUER_ID"
+          DEVELOPMENT_TEAM="$TEAM_ID"
+          CODE_SIGN_STYLE=Automatic
+          CURRENT_PROJECT_VERSION="${{ github.run_number }}"
+
+      - name: Export and upload
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key><string>app-store-connect</string>
+              <key>destination</key><string>upload</string>
+              <key>teamID</key><string>${TEAM_ID}</string>
+              <key>signingStyle</key><string>automatic</string>
+          </dict>
+          </plist>
+          PLIST
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Nuvo.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY_PATH" \
+            -authenticationKeyID "$KEY_ID" \
+            -authenticationKeyIssuerID "$ISSUER_ID"
+
+      - name: Remove API key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/AuthKey.p8"

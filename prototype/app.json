@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Nuvo Dev",
+    "slug": "nuvo-dev",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.hinodeentertainment.nuvo.dev",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "試作アプリで加工する写真を選ぶために使用します。",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      "expo-font"
+    ],
+    "scheme": "nuvo-dev",
+    "owner": "hinodeents-team",
+    "platforms": [
+      "ios"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "f919a068-5139-47bc-818b-ce693def498b"
+      }
+    }
+  }
+}

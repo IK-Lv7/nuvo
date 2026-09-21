@@ -1,0 +1,228 @@
+import CoreGraphics
+import XCTest
+@testable import NuvoCore
+
+final class AdjustmentParametersTests: XCTestCase {
+    func testDefaultIsIdentity() {
+        XCTAssertTrue(AdjustmentParameters().isIdentity)
+    }
+
+    func testModifiedIsNotIdentity() {
+        var p = AdjustmentParameters()
+        p.skinSmoothing = 0.5
+        XCTAssertFalse(p.isIdentity)
+    }
+
+    func testClampedLimitsToRange() {
+        var p = AdjustmentParameters()
+        p.brightness = 3
+        p.contrast = -3
+        let c = p.clamped()
+        XCTAssertEqual(c.brightness, 1)
+        XCTAssertEqual(c.contrast, -1)
+    }
+}
+
+final class AdjustmentParametersExtendedTests: XCTestCase {
+    func testFilterIntensityIsClampedToUnitRange() {
+        var p = AdjustmentParameters()
+        p.filterIntensity = 2
+        XCTAssertEqual(p.clamped().filterIntensity, 1)
+        p.filterIntensity = -1
+        XCTAssertEqual(p.clamped().filterIntensity, 0)
+    }
+
+    func testAddingSpotBreaksIdentity() {
+        var p = AdjustmentParameters()
+        p.spots.append(HealSpot(center: CGPoint(x: 0.5, y: 0.5)))
+        XCTAssertFalse(p.isIdentity)
+    }
+
+    func testSelectingFilterBreaksIdentity() {
+        var p = AdjustmentParameters()
+        p.filter = .warm
+        XCTAssertFalse(p.isIdentity)
+    }
+}
+
+final class AdjustmentParametersFaceTests: XCTestCase {
+    func testMakeupIsClampedToUnitRange() {
+        var p = AdjustmentParameters()
+        p.lipstick = 3
+        p.blush = -1
+        XCTAssertEqual(p.clamped().lipstick, 1)
+        XCTAssertEqual(p.clamped().blush, 0)
+    }
+
+    func testReshapeIsClampedToBidirectionalRange() {
+        var p = AdjustmentParameters()
+        p.faceSlim = 5
+        p.chin = -5
+        XCTAssertEqual(p.clamped().faceSlim, 1)
+        XCTAssertEqual(p.clamped().chin, -1)
+    }
+
+    func testMakeupBreaksIdentity() {
+        var p = AdjustmentParameters()
+        p.eyebrow = 0.3
+        XCTAssertFalse(p.isIdentity)
+        XCTAssertTrue(p.hasSkinOrMakeup)
+    }
+}
+
+final class AdjustmentParametersFinishTests: XCTestCase {
+    func testFinishingValuesAreClamped() {
+        var p = AdjustmentParameters()
+        p.sharpness = 4
+        p.warmth = -4
+        p.backgroundBlur = 9
+        let c = p.clamped()
+        XCTAssertEqual(c.sharpness, 1)
+        XCTAssertEqual(c.warmth, -1)
+        XCTAssertEqual(c.backgroundBlur, 1)
+    }
+
+    func testBackgroundAndIDPhotoBreakIdentity() {
+        var p = AdjustmentParameters()
+        p.idPhoto = .passport
+        XCTAssertFalse(p.isIdentity)
+        p = AdjustmentParameters()
+        p.autoEnhance = true
+        XCTAssertFalse(p.isIdentity)
+    }
+}
+
+final class LookTests: XCTestCase {
+    private func customized() -> AdjustmentParameters {
+        var p = AdjustmentParameters()
+        p.skinSmoothing = 0.6
+        p.filter = .film
+        p.spots = [HealSpot(center: CGPoint(x: 0.2, y: 0.3))]
+        p.texts = [TextOverlay(text: "hi")]
+        p.rotationQuarterTurns = 1
+        p.cropAspect = .square
+        p.idPhoto = .passport
+        return p
+    }
+
+    func testLookKeepsTheStyleButDropsPerPhotoContent() {
+        let look = customized().lookOnly()
+        XCTAssertEqual(look.skinSmoothing, 0.6)
+        XCTAssertEqual(look.filter, .film)
+        XCTAssertTrue(look.spots.isEmpty)
+        XCTAssertTrue(look.texts.isEmpty)
+        XCTAssertEqual(look.rotationQuarterTurns, 0)
+        XCTAssertNil(look.cropAspect)
+        XCTAssertNil(look.idPhoto)
+    }
+
+    func testApplyingALookKeepsThisPhotosOwnContent() {
+        var current = AdjustmentParameters()
+        current.spots = [HealSpot(center: CGPoint(x: 0.5, y: 0.5))]
+        current.rotationQuarterTurns = 3
+        current.texts = [TextOverlay(text: "mine")]
+        let result = current.applyingLook(customized())
+        XCTAssertEqual(result.skinSmoothing, 0.6)      // ルックから
+        XCTAssertEqual(result.filter, .film)
+        XCTAssertEqual(result.spots.count, 1)           // この写真から
+        XCTAssertEqual(result.rotationQuarterTurns, 3)
+        XCTAssertEqual(result.texts.first?.text, "mine")
+        XCTAssertNil(result.cropAspect)
+    }
+
+    func testParametersRoundTripThroughJSON() throws {
+        let original = customized()
+        let decoded = try JSONDecoder().decode(AdjustmentParameters.self, from: JSONEncoder().encode(original))
+        XCTAssertEqual(decoded, original)
+    }
+
+    func testCompositionValuesAreClamped() {
+        var p = AdjustmentParameters()
+        p.straighten = 4
+        p.rotationQuarterTurns = -1
+        let c = p.clamped()
+        XCTAssertEqual(c.straighten, 1)
+        XCTAssertEqual(c.rotationQuarterTurns, 3)
+    }
+
+    func testCompositionChangesBreakIdentity() {
+        var p = AdjustmentParameters()
+        p.flipHorizontal = true
+        XCTAssertFalse(p.isIdentity)
+    }
+}
+
+final class AdjustmentParametersExtraTests: XCTestCase {
+    func testNewValuesAreClamped() {
+        var p = AdjustmentParameters()
+        p.skinFlush = 9
+        p.noseSlim = -9
+        p.noseBridge = 9
+        p.filmGrain = -1
+        p.lightLeak = 9
+        let c = p.clamped()
+        XCTAssertEqual(c.skinFlush, 1)
+        XCTAssertEqual(c.noseSlim, -1)
+        XCTAssertEqual(c.noseBridge, 1)
+        XCTAssertEqual(c.filmGrain, 0)
+        XCTAssertEqual(c.lightLeak, 1)
+    }
+
+    func testFlushAndNoseBridgeCountAsSkinOrMakeup() {
+        var p = AdjustmentParameters()
+        p.skinFlush = 0.3
+        XCTAssertTrue(p.hasSkinOrMakeup)
+        p = AdjustmentParameters()
+        p.noseBridge = 0.3
+        XCTAssertTrue(p.hasSkinOrMakeup)
+    }
+
+    func testLookKeepsTheNewStyleValues() {
+        var p = AdjustmentParameters()
+        p.skinFlush = 0.4
+        p.filmGrain = 0.6
+        let look = p.lookOnly()
+        XCTAssertEqual(look.skinFlush, 0.4)
+        XCTAssertEqual(look.filmGrain, 0.6)
+    }
+}
+
+final class CropZoomParametersTests: XCTestCase {
+    func testZoomIsClampedToItsRange() {
+        var p = AdjustmentParameters()
+        p.cropZoom = 9
+        XCTAssertEqual(p.clamped().cropZoom, 4)
+        p.cropZoom = 0.2
+        XCTAssertEqual(p.clamped().cropZoom, 1)
+    }
+
+    func testCenterIsClampedToTheFrame() {
+        var p = AdjustmentParameters()
+        p.cropCenter = CGPoint(x: -3, y: 4)
+        XCTAssertEqual(p.clamped().cropCenter, CGPoint(x: 0, y: 1))
+    }
+
+    func testZoomBelongsToThePhotoNotTheLook() {
+        var p = AdjustmentParameters()
+        p.cropZoom = 3
+        p.cropCenter = CGPoint(x: 0.2, y: 0.8)
+        p.skinSmoothing = 0.5
+        XCTAssertEqual(p.lookOnly().cropZoom, 1)
+        XCTAssertEqual(p.lookOnly().skinSmoothing, 0.5)
+
+        var current = AdjustmentParameters()
+        current.cropZoom = 2
+        current.cropCenter = CGPoint(x: 0.3, y: 0.3)
+        let applied = current.applyingLook(p)
+        XCTAssertEqual(applied.cropZoom, 2)
+        XCTAssertEqual(applied.cropCenter, CGPoint(x: 0.3, y: 0.3))
+        XCTAssertEqual(applied.skinSmoothing, 0.5)
+    }
+
+    func testZoomBreaksIdentity() {
+        var p = AdjustmentParameters()
+        p.cropZoom = 1.5
+        XCTAssertFalse(p.isIdentity)
+    }
+}
+
