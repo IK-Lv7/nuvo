@@ -51,12 +51,9 @@ Bundle ID は `.dev` 付きで、App Store 版 Nuvo(`com.hinodeentertainment.nuv
 
 Actions の「Nuvo Dev iOS development build」を手動実行する([prototype-dev-build.yml](../.github/workflows/prototype-dev-build.yml))。
 
-| 選択肢 | ビルドする場所 | 成果物 |
-|---|---|---|
-| `cloud`(既定) | EAS のクラウド。ランナーは開始を指示するだけで待たない | EAS が発行する**インストール用 URL / QR**(出力の URL から開く) |
-| `local` | この GitHub の macOS ランナー(`eas build --local`) | `.ipa` のアーティファクト(14日保存)。**インストール用 URL は付かない** |
+EAS のクラウドでビルドする。ランナーは開始を指示するだけで待たず、EAS が発行する**インストール用 URL / QR**(出力の URL から開く)で端末に入れる。ネイティブの変更が無い間は不要。
 
-- `local` は EAS のビルド枠を使わずに済むが、`.ipa` を iPhone に入れる手段は別に必要。**Mac が無い環境では、`cloud` を使うほうが現実的。** ネイティブの変更が無い間はどちらも不要。
+- ランナーでのローカルビルド(`.ipa` を Actions の成果物にする方法)は置いていない。`.ipa` には登録端末の UDID と Apple アカウントの氏名が入り、公開リポジトリの成果物は誰でも取得できるため。
 - 新しい iPhone を登録したときは、`eas device:create` の後に `refresh_devices` を true にして実行する。登録済みの端末だけが、Ad Hoc のビルドを入れられる。新規・更新直後の Apple Developer 会員では、端末の反映に最大24〜72時間かかることがある。
 
 ### 必要な設定(GitHub の Secrets / Variables)

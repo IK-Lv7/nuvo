@@ -14,7 +14,7 @@ struct SettingsView: View {
                 Section {
                     Picker("settings.format", selection: $formatRaw) {
                         ForEach(ExportFormat.allCases, id: \.rawValue) { format in
-                            Text(LocalizedStringKey("settings.format.\(format.rawValue)")).tag(format.rawValue)
+                            Text(LocalizedStringKey.dynamic("settings.format." + format.rawValue)).tag(format.rawValue)
                         }
                     }
                     if ExportFormat(rawValue: formatRaw)?.isLossy ?? true {

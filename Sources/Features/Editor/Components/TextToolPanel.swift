@@ -13,12 +13,12 @@ struct TextToolPanel: View {
                 if let text = viewModel.selectedText {
                     field(text)
                     ChipStrip(items: TextColor.allCases, selected: text.color,
-                              title: { LocalizedStringKey("textColor.\($0.rawValue)") },
+                              title: { LocalizedStringKey.dynamic("textColor." + $0.rawValue) },
                               noneTitle: "", showsNone: false) { color in
                         if let color { viewModel.updateSelectedText { $0.color = color } }
                     }
                     ChipStrip(items: TextStyle.allCases, selected: text.style,
-                              title: { LocalizedStringKey("textStyle.\($0.rawValue)") },
+                              title: { LocalizedStringKey.dynamic("textStyle." + $0.rawValue) },
                               noneTitle: "", showsNone: false,
                               // 各書体の名前を、その書体で見せる。
                               itemFont: { style in style.previewFontName.map { .custom($0, size: 15) } }) { style in

@@ -66,7 +66,7 @@ struct ToolPanel: View {
     private var filterPanel: some View {
         VStack(spacing: 8) {
             ChipStrip(items: FilterPreset.allCases, selected: viewModel.parameters.filter,
-                      title: { LocalizedStringKey("filter.\($0.rawValue)") },
+                      title: { LocalizedStringKey.dynamic("filter." + $0.rawValue) },
                       noneTitle: "filter.none") { viewModel.setFilter($0) }
             if viewModel.parameters.filter != nil {
                 TrackSlider(
@@ -86,7 +86,7 @@ struct ToolPanel: View {
                 Text("editor.depthUsed").font(.footnote).foregroundStyle(.secondary)
             }
             ChipStrip(items: BackgroundColor.allCases, selected: viewModel.parameters.backgroundColor,
-                      title: { LocalizedStringKey("background.\($0.rawValue)") },
+                      title: { LocalizedStringKey.dynamic("background." + $0.rawValue) },
                       noneTitle: "background.none") { color in viewModel.update { $0.backgroundColor = color } }
         }
     }
@@ -94,7 +94,7 @@ struct ToolPanel: View {
     private var idPhotoPanel: some View {
         VStack(spacing: 8) {
             ChipStrip(items: IDPhotoSpec.allCases, selected: viewModel.parameters.idPhoto,
-                      title: { LocalizedStringKey("idPhoto.\($0.rawValue)") },
+                      title: { LocalizedStringKey.dynamic("idPhoto." + $0.rawValue) },
                       noneTitle: "idPhoto.none") { viewModel.setIDPhoto($0) }
             if viewModel.idPhotoUnavailable {
                 Text("editor.idPhotoIssue").font(.footnote).foregroundStyle(.orange)
@@ -157,7 +157,7 @@ struct ToolPanel: View {
 
     private var aspectPanel: some View {
         ChipStrip(items: CropAspect.allCases, selected: viewModel.parameters.cropAspect,
-                  title: { LocalizedStringKey("crop.\($0.rawValue)") },
+                  title: { LocalizedStringKey.dynamic("crop." + $0.rawValue) },
                   noneTitle: "crop.none") { aspect in viewModel.update { $0.cropAspect = aspect } }
     }
 }

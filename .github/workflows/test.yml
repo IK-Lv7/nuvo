@@ -19,6 +19,8 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
       - name: Swift version
         run: swift --version
       - name: Build
@@ -31,6 +33,8 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
       - name: Select Xcode 26 or later
         # App Store Connect は iOS 26 SDK 以降(Xcode 26 以降)でのビルドを要求する。
         # ランナーに入っている中で最も新しい Xcode 26 以降を選ぶ。無ければ一覧を出して止める。

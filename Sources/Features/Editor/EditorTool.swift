@@ -20,7 +20,7 @@ struct EditorTool: Identifiable {
     let icon: String
     let kind: EditorToolKind
 
-    var title: LocalizedStringKey { LocalizedStringKey("tool.\(id)") }
+    var title: LocalizedStringKey { LocalizedStringKey.dynamic("tool." + id) }
 
     /// 操作部の高さ。ツールを切り替えても写真が上下に動かないよう、ツールごとに固定する。
     var panelHeight: CGFloat {
@@ -54,7 +54,7 @@ struct ToolCategory: Identifiable {
     let icon: String
     let tools: [EditorTool]
 
-    var title: LocalizedStringKey { LocalizedStringKey("category.\(id)") }
+    var title: LocalizedStringKey { LocalizedStringKey.dynamic("category." + id) }
 }
 
 /// 編集ツールの一覧。画面はここを描くだけで、項目の追加・並べ替えはここだけで済む。
