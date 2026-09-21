@@ -1,0 +1,114 @@
+name: 仕上がりの報告 / Result looks unnatural
+description: 加工の結果が不自然、効きすぎ、位置がずれる、など / An effect looks wrong, too strong, or misplaced
+labels: [quality]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Nuvo の加工の強さや色の多くは、まだ**調整中の初期値**です。「ここが不自然」というご報告が、いちばん役に立ちます。
+        *Many effect strengths and colors are still initial values being tuned. Reports like this help the most.*
+
+        **個人の写真は添付しないでください。** 写真の状況は、下の選択肢と文章でお知らせください
+        (公開してよいご自身の写真でしたら、加工前後の画面を載せていただいても構いません)。
+        *Please do not attach personal photos. Describe the photo with the options below instead.*
+  - type: dropdown
+    id: effect
+    attributes:
+      label: どの効果ですか / Which effect?
+      options:
+        - 肌なめらか / Skin smoothing
+        - 肌の明るさ / Skin brightness
+        - 血色 / Blush tone
+        - くま / Dark circles
+        - ニキビ・シミの修復(タップ・自動) / Blemish repair
+        - 小顔 / Slim face
+        - 目 / Eyes
+        - あご / Chin
+        - 鼻・鼻筋 / Nose
+        - リップ / Lipstick
+        - チーク / Blush
+        - アイブロウ / Eyebrows
+        - 歯のホワイトニング / Teeth whitening
+        - 背景ぼかし / Background blur
+        - 背景色・切り抜き / Background color & cutout
+        - 証明写真 / ID photo
+        - フィルター / Filters
+        - 粒子・光漏れ / Grain & light leak
+        - 明るさ・コントラストなどの調整 / Adjustments
+        - 文字 / Text
+        - その他 / Other
+    validations:
+      required: true
+  - type: dropdown
+    id: problem
+    attributes:
+      label: どう見えますか(複数選べます) / What looks wrong? (choose all that apply)
+      multiple: true
+      options:
+        - のっぺりして、肌の質感が消える / Plastic, skin texture is lost
+        - 効きすぎる(弱い値でも強い) / Too strong, even at low values
+        - 効きが弱い / Too weak
+        - 顔や背景が歪む、直線が曲がる / Face or background is warped
+        - 色が不自然 / Unnatural color
+        - 境目が目立つ、はみ出す / Visible edges or spill-over
+        - 位置がずれる、場所を間違える / Misplaced
+        - 顔や人物を検出できない / Face or person not detected
+        - 髪、眼鏡、マスクなどにも掛かる / Affects hair, glasses, masks, etc.
+        - 処理が遅い / Slow
+        - その他 / Other
+    validations:
+      required: true
+  - type: input
+    id: strength
+    attributes:
+      label: そのときの強さ / Strength used
+      description: スライダーの値(たとえば +60、最大、30 など)。 / The slider value (for example +60, max, 30).
+  - type: dropdown
+    id: subject
+    attributes:
+      label: 写真の状況(複数選べます) / The photo (choose all that apply)
+      multiple: true
+      options:
+        - 1人の正面 / One person, facing the camera
+        - 複数人 / Several people
+        - 横顔・斜め・傾いた顔 / Profile, angled or tilted face
+        - 眼鏡 / Glasses
+        - 帽子・マスク・手で顔が隠れている / Hat, mask or hand covering the face
+        - ポートレートモードで撮影 / Taken in Portrait mode
+        - 自撮り / Selfie
+        - 高解像度(48MP など) / High resolution (such as 48MP)
+        - その他 / Other
+  - type: dropdown
+    id: light
+    attributes:
+      label: 光の状況 / Lighting
+      options:
+        - 明るい(屋外・窓際) / Bright (outdoors, by a window)
+        - 室内 / Indoors
+        - 暗い / Dark
+        - 逆光 / Backlit
+        - 色のついた照明 / Colored light
+  - type: textarea
+    id: description
+    attributes:
+      label: 詳しく教えてください / Tell us more
+      description: どこが、どう見えますか。どうなっていれば自然ですか。 / What looks wrong, and what would look natural?
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: 機種と iOS のバージョン / iPhone model and iOS version
+      placeholder: iPhone 16 Pro, iOS 26.0
+  - type: input
+    id: version
+    attributes:
+      label: Nuvo のバージョン / Nuvo version
+      description: 「設定」の一番下に表示されています。 / Shown at the bottom of Settings.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 確認 / Check
+      options:
+        - label: 個人の写真や個人情報を含めていません(または、公開してよいご自身の写真だけです) / I have not included personal photos (or only my own photos that I am happy to make public)
+          required: true

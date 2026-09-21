@@ -68,7 +68,7 @@ iPhone with iOS 17 or later. Available in English and Japanese.
 
 ## Feedback
 
-Found a bug or have an idea? [Open an issue](../../issues). Please don't attach personal photos.
+Found a bug, or want to tell us how a result looks? [Open an issue](../../issues/new/choose) — there are short forms for **bugs**, **results that look unnatural**, **general feedback**, and **feature ideas**. A free GitHub account is all you need. Please don't attach personal photos.
 
 ## For developers
 

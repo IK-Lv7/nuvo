@@ -15,6 +15,12 @@ Nuvo is **free, offline, and collects nothing**. A change will not be accepted i
 
 These rules are checked automatically (`python3 scripts/check_policy.py`).
 
+## Reporting problems and ideas
+
+Use **[New issue](../../issues/new/choose)** and pick the form that fits:
+bug report, *result looks unnatural* (very helpful while effect strengths are still being tuned),
+feedback, or feature request.
+
 ## Before you open a pull request
 
 - `swift test` passes (on a Mac), and the app builds.
@@ -40,6 +46,11 @@ Nuvo は **無料・オフライン・何も収集しない** アプリです。
 - 写真を、勝手に、どこかへ送る・共有する
 
 これらは自動で確認されます(`python3 scripts/check_policy.py`)。
+
+## 報告・提案の出し方
+
+**[New issue](../../issues/new/choose)** から、合うフォームを選んでください。
+不具合、*仕上がりが不自然*(効果の強さを調整している間は、とても助かります)、感想、機能の提案があります。
 
 ## Pull Request を出す前に
 

@@ -1,0 +1,41 @@
+name: 感想・ご意見 / Feedback
+description: 使ってみた感想、良かった点、気になった点 / What you liked, what felt off
+labels: [feedback]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        使ってみたご感想を、気軽にお寄せください。短くても、うれしいです。
+        *Any impressions are welcome, even short ones.*
+        **個人の写真は添付しないでください。 / Please do not attach personal photos.**
+  - type: textarea
+    id: tried
+    attributes:
+      label: どんなことを試しましたか / What did you try?
+      placeholder: 例) 自撮りで肌補正と小顔を使ってみた
+  - type: textarea
+    id: liked
+    attributes:
+      label: 良かった点 / What did you like?
+  - type: textarea
+    id: hard
+    attributes:
+      label: わかりにくい、使いにくい、気になった点 / What was confusing or annoying?
+  - type: dropdown
+    id: natural
+    attributes:
+      label: 仕上がりの自然さ / How natural did the results look?
+      options:
+        - とても自然 / Very natural
+        - おおむね自然 / Mostly natural
+        - ところどころ不自然 / A bit unnatural in places
+        - 不自然 / Unnatural
+        - 試していない / Didn't try
+  - type: textarea
+    id: other
+    attributes:
+      label: その他 / Anything else?
+  - type: input
+    id: device
+    attributes:
+      label: 機種と iOS のバージョン(わかれば) / iPhone model and iOS version (optional)

@@ -1,26 +1,43 @@
-name: Feature request / 機能の提案
-description: An idea to make Nuvo better. / Nuvo をより良くするアイデア
+name: 機能の提案 / Feature request
+description: Nuvo をより良くするアイデア / An idea to make Nuvo better
 labels: [enhancement]
 body:
   - type: markdown
     attributes:
       value: |
-        Nuvo stays **free, offline, and collects nothing** (see AGENTS.md). Ideas that need a network, an account,
-        payments, or a third-party library can't be accepted.
-        Nuvo は **無料・オフライン・何も収集しない** を守ります(AGENTS.md 参照)。通信・アカウント・課金・外部ライブラリが要る案は、受け入れられません。
+        Nuvo は **無料・オフライン・何も収集しない** を守ります([AGENTS.md](https://github.com/IK-Lv7/nuvo/blob/main/AGENTS.md) 参照)。
+        通信、アカウント、課金、広告、解析、外部ライブラリが要る案は、受け入れられません。
+        *Nuvo stays free, offline, and collects nothing. Ideas that need a network, an account, payments, ads, analytics or a third-party library can't be accepted.*
   - type: textarea
     id: idea
     attributes:
-      label: What would you like? / どんな機能ですか
+      label: どんな機能ですか / What would you like?
     validations:
       required: true
   - type: textarea
-    id: why
+    id: scenario
     attributes:
-      label: Why is it useful? / なぜ役に立ちますか
+      label: どんな場面で使いたいですか / When would you use it?
+      description: いま困っていること、他のアプリでできて Nuvo でできないこと、など。 / What is hard today, or what other apps do that Nuvo doesn't?
+  - type: dropdown
+    id: area
+    attributes:
+      label: 近い分野 / Closest area
+      options:
+        - 肌 / Skin
+        - 顔立ち / Face shape
+        - メイク / Makeup
+        - 背景・証明写真 / Background & ID photo
+        - 構図 / Composition
+        - 文字 / Text
+        - フィルター・質感 / Filters & texture
+        - 保存・共有・書き出し / Save, share & export
+        - 使いやすさ・画面 / Usability & screens
+        - その他 / Other
   - type: checkboxes
     id: on-device
     attributes:
-      label: Fits Nuvo's principles / Nuvo の方針に合っています
+      label: Nuvo の方針に合っています / Fits Nuvo's principles
       options:
-        - label: It can work entirely on the device, with no network and no data collection. / 端末の中だけで、通信もデータ収集もなしに実現できる
+        - label: 端末の中だけで、通信もデータ収集もなしに実現できると思います / I believe it can work entirely on the device, with no network and no data collection
+          required: true
