@@ -11,15 +11,17 @@ enum TextRenderer {
     private static let lineSpacing: CGFloat = 1.1
 
     static func apply(_ overlays: [TextOverlay], to image: CIImage) -> CIImage {
+        // 文字が写真の端をはみ出しても、書き出す画像の大きさは変えない。
+        // `composited(over:)` は範囲を両方の和にするため、放っておくと出力が広がってしまう。
+        let extent = image.extent
         var result = image
         for overlay in overlays where !overlay.text.isEmpty {
-            guard let patch = render(overlay, imageSize: result.extent.size) else { continue }
-            let extent = result.extent
+            guard let patch = render(overlay, imageSize: extent.size) else { continue }
             let cx = extent.minX + overlay.center.x * extent.width
             let cy = extent.maxY - overlay.center.y * extent.height
             let moved = CIImage(cgImage: patch).transformed(by: CGAffineTransform(
                 translationX: cx - CGFloat(patch.width) / 2, y: cy - CGFloat(patch.height) / 2))
-            result = moved.composited(over: result)
+            result = moved.composited(over: result).cropped(to: extent)
         }
         return result
     }

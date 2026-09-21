@@ -118,5 +118,26 @@ final class TextRendererTests: XCTestCase {
             XCTAssertEqual(decoded, style)
         }
     }
+
+    func testTextOverflowingThePhotoKeepsTheOutputSize() throws {
+        // 文字が写真の端をはみ出しても、書き出す画像の大きさは変わらない(はみ出した部分は切り落とす)。
+        for center in [CGPoint(x: 0, y: 0.5), CGPoint(x: 1, y: 0.5), CGPoint(x: 0.5, y: 0), CGPoint(x: 1, y: 1)] {
+            var p = AdjustmentParameters()
+            var big = overlay(center: center)
+            big.size = 0.5
+            p.texts = [big]
+            let cgImage = try XCTUnwrap(renderer.render(renderer.makeSource(image: black()), parameters: p))
+            XCTAssertEqual(cgImage.width, side, "center \(center)")
+            XCTAssertEqual(cgImage.height, side, "center \(center)")
+        }
+    }
+
+    func testSeveralOverflowingTextsKeepTheSize() throws {
+        var p = AdjustmentParameters()
+        p.texts = [overlay(center: CGPoint(x: 0, y: 0)), overlay(center: CGPoint(x: 1, y: 1))]
+        let cgImage = try XCTUnwrap(renderer.render(renderer.makeSource(image: black()), parameters: p))
+        XCTAssertEqual(cgImage.width, side)
+        XCTAssertEqual(cgImage.height, side)
+    }
 }
 
