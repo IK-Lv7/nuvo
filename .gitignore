@@ -18,3 +18,7 @@ xcuserdata/
 
 # 個人・組織向けの作業用設定(公開しない)。prototype/.claude は Expo のテンプレートが置いたもので対象外
 /.claude/
+
+# Python の生成物
+__pycache__/
+*.pyc

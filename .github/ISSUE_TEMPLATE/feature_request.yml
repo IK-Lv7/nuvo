@@ -1,0 +1,26 @@
+name: Feature request / 機能の提案
+description: An idea to make Nuvo better. / Nuvo をより良くするアイデア
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Nuvo stays **free, offline, and collects nothing** (see AGENTS.md). Ideas that need a network, an account,
+        payments, or a third-party library can't be accepted.
+        Nuvo は **無料・オフライン・何も収集しない** を守ります(AGENTS.md 参照)。通信・アカウント・課金・外部ライブラリが要る案は、受け入れられません。
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like? / どんな機能ですか
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why is it useful? / なぜ役に立ちますか
+  - type: checkboxes
+    id: on-device
+    attributes:
+      label: Fits Nuvo's principles / Nuvo の方針に合っています
+      options:
+        - label: It can work entirely on the device, with no network and no data collection. / 端末の中だけで、通信もデータ収集もなしに実現できる

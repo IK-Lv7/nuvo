@@ -1,0 +1,42 @@
+name: Prototype
+
+# UI 試作(prototype/)が壊れていないかを確認する。prototype/ の変更があるときだけ動く。
+on:
+  push:
+    branches: [main]
+    paths: ["prototype/**", ".github/workflows/prototype.yml"]
+  pull_request:
+    paths: ["prototype/**", ".github/workflows/prototype.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prototype-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: prototype
+
+jobs:
+  check:
+    name: 型・依存・バンドル
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: prototype/package-lock.json
+      - run: npm ci
+      - name: 型チェック
+        run: npx tsc --noEmit
+      - name: Expo の依存の整合性
+        run: npx expo-doctor
+      - name: バンドルできるか
+        run: npx expo export --platform ios --output-dir "$RUNNER_TEMP/export"

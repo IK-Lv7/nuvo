@@ -1,0 +1,9 @@
+# ブランチの保護で「コードオーナーのレビューを必須にする」と、次のファイルの変更には、必ずオーナーの承認が要る。
+# 約束(通信しない・収集しない・課金しない)と、秘密情報を扱う部分を守るため。
+/.github/                                   @IK-Lv7
+/scripts/                                   @IK-Lv7
+/AGENTS.md                                  @IK-Lv7
+/SECURITY.md                                @IK-Lv7
+/Package.swift                              @IK-Lv7
+/project.yml                                @IK-Lv7
+/Sources/Resources/PrivacyInfo.xcprivacy    @IK-Lv7

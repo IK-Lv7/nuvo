@@ -1,0 +1,36 @@
+name: Policy
+
+# Nuvo の約束(通信しない・収集しない・課金しない、外部依存なし)と、日英のローカライズを、
+# コードの側で自動的に確認する。軽い Linux で動く。手元でも scripts/ の Python で実行できる。
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: policy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  policy:
+    name: AGENTS.md の制約
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - run: python3 scripts/check_policy.py
+
+  localization:
+    name: 日英のローカライズ
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - run: python3 scripts/check_localization.py

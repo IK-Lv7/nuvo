@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # GitHub Actions のバージョン(コミット ID で固定しているため、更新は Dependabot に任せる)
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci"
+
+  # UI 試作(製品には入らない)。Expo・React Native は SDK と対で上げる必要があるため、個別の更新は提案しない
+  # (SDK の更新は `npx expo install --fix` / expo-upgrade の手順で行う)。それ以外の依存の更新と、セキュリティ更新を受け取る。
+  - package-ecosystem: npm
+    directory: /prototype
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "expo"
+      - dependency-name: "expo-*"
+      - dependency-name: "react"
+      - dependency-name: "react-native"
+      - dependency-name: "react-native-*"
+      - dependency-name: "@expo/*"
+      - dependency-name: "@types/react"
+      - dependency-name: "typescript"
+    commit-message:
+      prefix: "prototype"

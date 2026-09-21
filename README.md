@@ -74,6 +74,6 @@ Found a bug or have an idea? [Open an issue](../../issues). Please don't attach 
 
 Nuvo is written in Swift and SwiftUI on top of Apple's own frameworks (Core Image, Vision, Photos), with **no third-party dependencies**.
 
-- The project's principles and rules are in [AGENTS.md](AGENTS.md). Please read it before contributing.
+- The project's principles and rules are in [AGENTS.md](AGENTS.md); see also [CONTRIBUTING.md](CONTRIBUTING.md). The rules are checked automatically by `scripts/check_policy.py`.
 - The app project is generated with [XcodeGen](https://github.com/yonaskolb/XcodeGen) from `project.yml`; the core library can be tested with `swift test` on a Mac.
 - [`prototype/`](prototype) is a throwaway Expo mockup used to iterate on the interface. It is not part of the app.

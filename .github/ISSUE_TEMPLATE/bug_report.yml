@@ -1,0 +1,33 @@
+name: Bug report / 不具合の報告
+description: Something doesn't work as expected. / 期待どおりに動かない
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Please do not attach personal photos. / 個人の写真は添付しないでください。**
+        Security or privacy problems: use the private report link instead. / セキュリティ・プライバシーの問題は、非公開の報告を使ってください。
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened? / 何が起きましたか
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / 再現の手順
+      placeholder: "1. ...\n2. ..."
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect? / 期待していた動き
+  - type: input
+    id: device
+    attributes:
+      label: iPhone model and iOS version / 機種と iOS のバージョン
+      placeholder: iPhone 16 Pro, iOS 26.0
+  - type: input
+    id: version
+    attributes:
+      label: Nuvo version / Nuvo のバージョン

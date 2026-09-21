@@ -74,6 +74,6 @@ iOS 17 以降の iPhone。日本語と英語に対応しています。
 
 Nuvo は Swift と SwiftUI で書かれ、Apple 標準のフレームワーク(Core Image、Vision、Photos)だけで動きます。**外部ライブラリには依存していません。**
 
-- プロジェクトの方針とルールは [AGENTS.md](AGENTS.md) にあります。コントリビュートの前に、お読みください。
+- プロジェクトの方針とルールは [AGENTS.md](AGENTS.md) にあります。[CONTRIBUTING.md](CONTRIBUTING.md) もご覧ください。ルールは `scripts/check_policy.py` で自動的に確認されます。
 - アプリのプロジェクトは、`project.yml` から [XcodeGen](https://github.com/yonaskolb/XcodeGen) で生成します。コアのライブラリは、Mac で `swift test` によりテストできます。
 - [`prototype/`](prototype) は、画面づくりを素早く試すための、使い捨ての Expo 試作です。アプリの一部ではありません。

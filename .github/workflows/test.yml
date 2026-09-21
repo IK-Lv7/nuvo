@@ -2,17 +2,23 @@ name: Test
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
   contents: read
+
+# 同じブランチで新しく push したら、古い実行は止める(macOS の待ち時間を減らす)。
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   core:
     # Mac を持たない開発体制のため、ビルド・テストの検証はこのジョブに集約する。
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Swift version
         run: swift --version
       - name: Build
@@ -24,7 +30,7 @@ jobs:
     # アプリ本体が生成・ビルドできることを確認する(署名なし)。
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Select Xcode 26 or later
         # App Store Connect は iOS 26 SDK 以降(Xcode 26 以降)でのビルドを要求する。
         # ランナーに入っている中で最も新しい Xcode 26 以降を選ぶ。無ければ一覧を出して止める。

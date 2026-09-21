@@ -40,6 +40,7 @@ defaults:
 jobs:
   cloud:
     name: Build on EAS cloud
+    environment: release
     if: inputs.where == 'cloud'
     # ビルド自体は EAS 側で動くため、ランナーは軽い Linux でよい。
     runs-on: ubuntu-latest
@@ -95,6 +96,7 @@ jobs:
 
   local:
     name: Build on this macOS runner (.ipa)
+    environment: release
     if: inputs.where == 'local'
     runs-on: macos-26
     timeout-minutes: 60
