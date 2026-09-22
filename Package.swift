@@ -13,9 +13,12 @@ let package = Package(
         .target(
             name: "NuvoCore",
             path: "Sources/Core",
-            // 復元・強化系機能(高画質化など)で使う、同梱の Core ML モデル置き場。
-            // まだモデル本体はなく、README だけが入っている(scripts/model_conversion/README.md 参照)。
-            resources: [.copy("Resources/Models")]
+            resources: [
+                // 復元・強化系機能(高画質化など)で使う、同梱の Core ML モデル置き場(scripts/model_conversion/README.md 参照)。
+                .copy("Resources/Models"),
+                // スタンプで使う、同梱の絵文字画像(OpenMoji。THIRD_PARTY_NOTICES.md 参照)。
+                .copy("Resources/Stamps"),
+            ]
         ),
         .testTarget(
             name: "NuvoCoreTests",

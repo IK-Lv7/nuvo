@@ -2833,6 +2833,22 @@
         }
       }
     },
+    "settings.aboutFooter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some heart and sparkle stamps use OpenMoji graphics (openmoji.org), licensed under CC BY-SA 4.0. See THIRD_PARTY_NOTICES.md in the source repository for details."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ハート・キラキラ系スタンプの一部に OpenMoji(openmoji.org)の画像を使用しています(ライセンス: CC BY-SA 4.0)。詳細はソースリポジトリの THIRD_PARTY_NOTICES.md をご覧ください。"
+          }
+        }
+      }
+    },
     "settings.done": {
       "localizations": {
         "en": {
@@ -3057,6 +3073,22 @@
         }
       }
     },
+    "stamp.beatingHeart": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beating heart"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ドキドキハート"
+          }
+        }
+      }
+    },
     "stamp.bolt": {
       "localizations": {
         "en": {
@@ -3089,6 +3121,22 @@
         }
       }
     },
+    "stamp.cherryBlossom": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cherry blossom"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "桜"
+          }
+        }
+      }
+    },
     "stamp.cloud": {
       "localizations": {
         "en": {
@@ -3117,6 +3165,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "王冠"
+          }
+        }
+      }
+    },
+    "stamp.dizzy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sparkle trail"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キラキラ"
           }
         }
       }
@@ -3169,6 +3233,38 @@
         }
       }
     },
+    "stamp.glowingStar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glowing star"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "輝く星"
+          }
+        }
+      }
+    },
+    "stamp.growingHeart": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Growing heart"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ふくらむハート"
+          }
+        }
+      }
+    },
     "stamp.heart": {
       "localizations": {
         "en": {
@@ -3181,6 +3277,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "ハート"
+          }
+        }
+      }
+    },
+    "stamp.heartArrow": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heart with arrow"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "矢の刺さったハート"
           }
         }
       }
@@ -3281,6 +3393,38 @@
         }
       }
     },
+    "stamp.revolvingHearts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revolving hearts"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回るハート"
+          }
+        }
+      }
+    },
+    "stamp.ribbon": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ribbon"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "リボン"
+          }
+        }
+      }
+    },
     "stamp.smile": {
       "localizations": {
         "en": {
@@ -3325,6 +3469,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "キラキラ"
+          }
+        }
+      }
+    },
+    "stamp.sparklingHeart": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sparkling heart"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キラキラハート"
           }
         }
       }
@@ -3405,6 +3565,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "トロフィー"
+          }
+        }
+      }
+    },
+    "stamp.twoHearts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two hearts"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ハート2つ"
           }
         }
       }

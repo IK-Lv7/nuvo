@@ -39,6 +39,46 @@ final class SymbolRendererTests: XCTestCase {
     }
 }
 
+final class EmojiStampRendererTests: XCTestCase {
+    func testEveryCatalogEmojiRenders() {
+        for emoji in EmojiStamp.allCases {
+            let image = EmojiStampRenderer.image(assetName: emoji.assetName, pointSize: 30)
+            XCTAssertNotNil(image, "\(emoji.rawValue) が読み込めなかった(Sources/Core/Resources/Stamps/ を確認)")
+        }
+    }
+
+    func testTheImageIsScaledToTheRequestedSize() throws {
+        let image = try XCTUnwrap(EmojiStampRenderer.image(assetName: EmojiStamp.heart.assetName, pointSize: 50))
+        XCTAssertEqual(image.width, 50)
+        XCTAssertEqual(image.height, 50)
+    }
+
+    func testAnUnknownAssetNameProducesNothing() {
+        XCTAssertNil(EmojiStampRenderer.image(assetName: "this-asset-does-not-exist", pointSize: 30))
+    }
+}
+
+final class StampOverlayCodableTests: XCTestCase {
+    /// `imageAssetName` を追加する前に保存されたルックにこの項目が無くても読めること
+    /// (AdjustmentParameters.highResolution と同じ考え方)。
+    func testDecodesWithoutImageAssetNameField() throws {
+        let json = """
+        {"id":"9D3E1B9E-1234-4A5B-9C1D-000000000000","symbolName":"heart.fill",
+         "center":{"x":0.5,"y":0.5},"size":0.2,"color":"white"}
+        """
+        let stamp = try JSONDecoder().decode(StampOverlay.self, from: Data(json.utf8))
+        XCTAssertNil(stamp.imageAssetName)
+        XCTAssertEqual(stamp.symbolName, "heart.fill")
+    }
+
+    func testEmojiInitializerSetsBothNames() {
+        let stamp = StampOverlay(emoji: .sparklingHeart)
+        XCTAssertEqual(stamp.imageAssetName, "sparklingHeart")
+        // symbolName は絵文字画像が読み込めなかったときの手がかり用の値で、空にはしない。
+        XCTAssertFalse(stamp.symbolName.isEmpty)
+    }
+}
+
 final class StampRendererTests: XCTestCase {
     private let renderer = ImageRenderer()
     private let side = 200
@@ -64,6 +104,11 @@ final class StampRendererTests: XCTestCase {
 
     func testAStampDrawsBrightPixelsOnADarkPhoto() throws {
         let stamp = StampOverlay(symbolName: "star.fill", center: CGPoint(x: 0.5, y: 0.5), size: 0.3, color: .white)
+        XCTAssertGreaterThan(brightPixelCount(try render([stamp])), 0)
+    }
+
+    func testAnEmojiStampDrawsBrightPixelsOnADarkPhoto() throws {
+        let stamp = StampOverlay(emoji: .sparklingHeart, center: CGPoint(x: 0.5, y: 0.5), size: 0.3)
         XCTAssertGreaterThan(brightPixelCount(try render([stamp])), 0)
     }
 

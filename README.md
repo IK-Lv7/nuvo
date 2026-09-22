@@ -54,7 +54,7 @@ Eyeliner, fuller lashes, eyeshadow, tinted lenses, and a soft under-eye highligh
 Blur or replace the background. Portrait Mode photos use their built-in depth data for a more natural blur. If the automatic cutout misses a spot, fix it with an adjustable pen: paint to add or erase from the person. Make an ID photo with one tap: 35 × 45 mm (passport / My Number card) or 30 × 40 mm (résumé).\*
 
 **Composition, text, and filters**
-Crop, rotate, straighten, and zoom in. Add text in a range of typefaces, or a stamp (Apple's own icon set — no bundled artwork). Choose from 18 filters, then add film grain or a soft light leak.
+Crop, rotate, straighten, and zoom in. Add text in a range of typefaces, or a stamp — Apple's own icon set, plus a handful of colorful heart and sparkle stickers. Choose from 18 filters, then add film grain or a soft light leak.
 
 **Make it yours**
 Save your favorite settings as a *Look* and apply it to any photo — or to many photos at once.
@@ -84,7 +84,7 @@ Found a bug, or want to tell us how a result looks? [Open an issue](../../issues
 
 ## For developers
 
-Nuvo is written in Swift and SwiftUI on top of Apple's own frameworks (Core Image, Vision, Photos), with **no third-party code**. The one exception is a small bundled Core ML model (used for "Enhance quality") converted from a third-party open-source checkpoint; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for its license.
+Nuvo is written in Swift and SwiftUI on top of Apple's own frameworks (Core Image, Vision, Photos), with **no third-party code**. There are two exceptions, both bundled third-party assets rather than code: a small Core ML model (used for "Enhance quality") and a handful of OpenMoji graphics (used for a few of the heart/sparkle stamps, CC BY-SA 4.0); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for their licenses.
 
 - The project's principles and rules are in [AGENTS.md](AGENTS.md); see also [CONTRIBUTING.md](CONTRIBUTING.md). The rules are checked automatically by `scripts/check_policy.py`.
 - The app project is generated with [XcodeGen](https://github.com/yonaskolb/XcodeGen) from `project.yml`; the core library can be tested with `swift test` on a Mac.

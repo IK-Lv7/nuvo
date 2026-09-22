@@ -22,6 +22,9 @@ enum StampRenderer {
     private static func render(_ stamp: StampOverlay, imageSize: CGSize) -> CGImage? {
         let pointSize = CGFloat(min(max(stamp.size, 0.01), 1)) * min(imageSize.width, imageSize.height)
         guard pointSize >= 4 else { return nil }
+        if let imageAssetName = stamp.imageAssetName {
+            return EmojiStampRenderer.image(assetName: imageAssetName, pointSize: pointSize)
+        }
         return SymbolRenderer.image(symbolName: stamp.symbolName, pointSize: pointSize, color: stamp.color.cgColor)
     }
 }

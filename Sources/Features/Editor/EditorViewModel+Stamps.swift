@@ -11,7 +11,15 @@ extension EditorViewModel {
 
     /// `symbolName` は SF Symbols の名前("heart.fill" など)。新しいスタンプとして追加し、選択状態にする。
     func addStamp(_ symbolName: String) {
-        let stamp = StampOverlay(symbolName: symbolName)
+        add(StampOverlay(symbolName: symbolName))
+    }
+
+    /// 同梱の絵文字画像(OpenMoji)のスタンプを追加する。
+    func addEmojiStamp(_ emoji: EmojiStamp) {
+        add(StampOverlay(emoji: emoji))
+    }
+
+    private func add(_ stamp: StampOverlay) {
         mutateWithoutCommitting { p in p.stamps = (p.stamps ?? []) + [stamp] }
         selectStamp(stamp.id)
         commitEdit()

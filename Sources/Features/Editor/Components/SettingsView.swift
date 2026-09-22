@@ -42,6 +42,8 @@ struct SettingsView: View {
                     LabeledContent("settings.version", value: version)
                 } header: {
                     Text("settings.about")
+                } footer: {
+                    Text("settings.aboutFooter")
                 }
             }
             .navigationTitle("settings.title")

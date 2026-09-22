@@ -1,8 +1,8 @@
 # サードパーティ通知 / Third-Party Notices
 
 Nuvo 本体は Apple の標準フレームワークのみで作られており、ゼロ依存の方針を保っている
-(詳細は [AGENTS.md](AGENTS.md) 第1章・第2章)。唯一の例外が、高画質化・復元系機能で使う
-学習済みモデル(重み)で、これは Nuvo が作ったものではない第三者の資産のため、ここに明記する。
+(詳細は [AGENTS.md](AGENTS.md) 第1章・第2章)。例外が2つあり、どちらも Nuvo が作ったものではない
+第三者の資産(学習済みモデル・スタンプの絵文字画像)のため、ここに明記する。
 
 `prototype/` の依存については [`prototype/LICENSE`](prototype/LICENSE) と `prototype/README` を参照。
 
@@ -50,3 +50,26 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 同じ系列(同じアーキテクチャ・同じライセンス)のモデルを今後追加する場合も、
 この節に追記するだけでよい([`scripts/model_conversion/README.md`](scripts/model_conversion/README.md) 参照)。
+
+---
+
+## OpenMoji
+
+- 用途: スタンプの一部(ハート・キラキラ系。`Sources/Core/Rendering/Filters/EmojiStampRenderer.swift`)
+- 出典: <https://github.com/hfg-gmuend/openmoji>(色付き SVG セット `color/svg/`)
+- Nuvo に同梱するのは、公式カラー SVG のうち 13 種類だけを選び、240×240 の PNG に書き出したもの
+  (絵柄・配色は変更していない。ラスタライズのみの変更)。
+- ライセンス: 画像(グラフィックス)は **CC BY-SA 4.0**。データ(絵文字と Unicode の対応表など)は CC0、
+  フォントは OFL だが、Nuvo では画像しか使っていない。
+  全文: <https://creativecommons.org/licenses/by-sa/4.0/legalcode>
+- **ShareAlike の注記**: CC BY-SA は「改変物も同じライセンスで公開する」ことを求める。Nuvo に同梱する
+  13 個の PNG(ラスタライズという改変を加えたもの)は、この節の記載をもって **CC BY-SA 4.0 で提供する**。
+  この条項が及ぶのは同梱した画像ファイルそのものであり、Nuvo 本体のソースコード(MIT)には影響しない。
+- 帰属表示(OpenMoji 側の推奨文言): README・アプリの「設定」画面の両方に記載している
+  (`Sources/Features/Editor/Components/SettingsView.swift`)。
+
+  > All emojis designed by OpenMoji – the open-source emoji and icon project.
+  > License: CC BY-SA 4.0
+  > Source: https://github.com/hfg-gmuend/openmoji
+
+同じ系列の絵文字を今後追加する場合も、この節への追記だけでよい(新しいライセンスファイルは不要)。
