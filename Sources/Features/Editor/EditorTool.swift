@@ -16,6 +16,7 @@ enum EditorToolKind {
     case people
     case lipstick
     case cutout
+    case highResolution
 }
 
 struct EditorTool: Identifiable {
@@ -53,6 +54,7 @@ struct EditorTool: Identifiable {
         case .people: !p.excludedFaces.isEmpty
         case .lipstick: p.lipstick != 0 || p.lipstickColor != nil
         case .cutout: p.maskStrokes?.isEmpty == false
+        case .highResolution: p.highResolution == true
         }
     }
 }
@@ -124,6 +126,7 @@ enum EditorCatalog {
         ]),
         ToolCategory(id: "finish", icon: "wand.and.stars", tools: [
             EditorTool(id: "autoEnhance", icon: "wand.and.stars", kind: .autoEnhance),
+            EditorTool(id: "highResolution", icon: "sparkle.magnifyingglass", kind: .highResolution),
             EditorTool(id: "shadows", icon: "moon", kind: .slider(\.shadows, both)),
             EditorTool(id: "highlightRecovery", icon: "sun.haze", kind: .slider(\.highlightRecovery, intensity)),
             EditorTool(id: "sharpness", icon: "triangle", kind: .slider(\.sharpness, intensity)),

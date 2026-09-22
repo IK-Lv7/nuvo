@@ -60,6 +60,9 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
 
     /// 仕上げ。
     public var autoEnhance = false
+    /// 高画質化(2倍に拡大し、拡大でぼける分をシャープで補う)。書き出しの大きさ・時間が増える。
+    /// nil は「しない」(以前のバージョンで保存したルックにこの項目がなくても読めるようにする)。
+    public var highResolution: Bool?
     public var sharpness: Double = 0
     public var vignette: Double = 0
     /// 質感。フィルムの粒子感と、光が漏れたような色のにじみ。

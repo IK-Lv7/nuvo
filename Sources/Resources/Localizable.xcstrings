@@ -1969,6 +1969,22 @@
         }
       }
     },
+    "highResolution.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doubles the resolution and sharpens the result. Exporting takes longer and the file is larger."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解像度を2倍にし、輪郭をシャープにします。書き出しに時間がかかり、ファイルも大きくなります。"
+          }
+        }
+      }
+    },
     "idPhoto.none": {
       "localizations": {
         "en": {
@@ -2989,6 +3005,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "フィルター"
+          }
+        }
+      }
+    },
+    "tool.highResolution": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enhance quality"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "高画質化"
           }
         }
       }

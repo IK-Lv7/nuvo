@@ -197,6 +197,23 @@ final class BackgroundAndToneTests: XCTestCase {
         XCTAssertEqual(cgImage.height, side)
     }
 
+    func testHighResolutionDoublesTheExportedSize() throws {
+        var p = AdjustmentParameters()
+        p.highResolution = true
+        let source = renderer.makeSource(image: solid(0.4, 0.5, 0.6))
+        let cgImage = try XCTUnwrap(renderer.render(source, parameters: p))
+        XCTAssertEqual(cgImage.width, side * 2)
+        XCTAssertEqual(cgImage.height, side * 2)
+    }
+
+    func testHighResolutionOffKeepsTheOriginalSize() throws {
+        // 既定(nil)は「しない」。以前のバージョンで保存したルックと同じ大きさで書き出す。
+        let source = renderer.makeSource(image: solid(0.4, 0.5, 0.6))
+        let cgImage = try XCTUnwrap(renderer.render(source, parameters: AdjustmentParameters()))
+        XCTAssertEqual(cgImage.width, side)
+        XCTAssertEqual(cgImage.height, side)
+    }
+
     func testVignetteDarkensTheCornersMoreThanTheCenter() throws {
         var p = AdjustmentParameters()
         p.vignette = 1

@@ -190,6 +190,27 @@ final class LookTests: XCTestCase {
         XCTAssertEqual(applied.maskStrokes, current.maskStrokes)
     }
 
+    func testHighResolutionRoundTripsThroughJSON() throws {
+        var p = AdjustmentParameters()
+        p.highResolution = true
+        let decoded = try JSONDecoder().decode(AdjustmentParameters.self, from: JSONEncoder().encode(p))
+        XCTAssertEqual(decoded.highResolution, true)
+    }
+
+    func testSavedLooksWithoutHighResolutionStillDecode() throws {
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(
+            with: JSONEncoder().encode(AdjustmentParameters())) as? [String: Any])
+        object.removeValue(forKey: "highResolution")
+        let data = try JSONSerialization.data(withJSONObject: object)
+        XCTAssertNoThrow(try JSONDecoder().decode(AdjustmentParameters.self, from: data))
+    }
+
+    func testEnablingHighResolutionBreaksIdentity() {
+        var p = AdjustmentParameters()
+        p.highResolution = true
+        XCTAssertFalse(p.isIdentity)
+    }
+
     func testParametersRoundTripThroughJSON() throws {
         let original = customized()
         let decoded = try JSONDecoder().decode(AdjustmentParameters.self, from: JSONEncoder().encode(original))

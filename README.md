@@ -61,6 +61,9 @@ Save as JPEG, HEIC, or PNG at the quality you want. Location data can be removed
 
 <sub>\* The ID photo layouts follow the published guidelines for Japanese passport and My Number card photos. Always check the requirements of wherever you submit the photo.</sub>
 
+**Enhance quality**
+Double the resolution and sharpen the result with a single tap — no AI model, no upload, just Core Image running on your phone.
+
 ## Made to look like you
 
 Editing should make you look like the best version of yourself, not like a different person. Nuvo is tuned for restraint: gentle skin smoothing that keeps texture, natural-looking limits on every effect, and an easy press-and-hold to compare with your original at any time.

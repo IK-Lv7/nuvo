@@ -34,6 +34,8 @@ struct ToolPanel: View {
             LooksPanel(viewModel: viewModel, store: lookStore)
         case .people:
             peoplePanel
+        case .highResolution:
+            highResolutionPanel
         case .lipstick:
             lipstickPanel
         case .cutout:
@@ -193,6 +195,19 @@ struct ToolPanel: View {
             } else {
                 Text("people.hint").font(.footnote).foregroundStyle(.secondary)
             }
+        }
+    }
+
+    private var highResolutionPanel: some View {
+        VStack(spacing: 8) {
+            Button {
+                viewModel.update { $0.highResolution = !($0.highResolution == true) }
+            } label: {
+                Label(viewModel.parameters.highResolution == true ? "editor.on" : "editor.off",
+                      systemImage: viewModel.parameters.highResolution == true ? "checkmark.circle.fill" : "circle")
+            }
+            .buttonStyle(PillButtonStyle(isOn: viewModel.parameters.highResolution == true))
+            Text("highResolution.hint").font(.footnote).foregroundStyle(.secondary)
         }
     }
 
