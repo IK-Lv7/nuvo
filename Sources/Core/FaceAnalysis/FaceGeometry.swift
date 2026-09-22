@@ -73,7 +73,7 @@ public enum FaceGeometry {
     /// 両目・口の位置から顔の傾き(ロール)を求める。座標系は問わない(正規化・ピクセルどちらでもよい)が、
     /// 呼び出し側の他の座標と揃えること。両目のどちらかが取れない場合は傾きなしの軸を返す。
     public static func faceAxes(leftEye: [CGPoint], rightEye: [CGPoint], mouth: [CGPoint]) -> FaceAxes {
-        guard leftEye.count >= 3, rightEye.count >= 3 else { return uprightAxes }
+        guard !leftEye.isEmpty, !rightEye.isEmpty else { return uprightAxes }
         let left = centroid(leftEye)
         let right = centroid(rightEye)
         let dx = right.x - left.x, dy = right.y - left.y
@@ -83,7 +83,7 @@ public enum FaceGeometry {
         // horizontal を 90° 回した2方向のうち、口に近い側を「下(あご方向)」として選ぶ。
         // Vision の left/right の割り当て(解剖学的な左右で、画像上の左右と一致するとは限らない)に依存しないため。
         var vertical = CGPoint(x: -horizontal.y, y: horizontal.x)
-        if mouth.count >= 3 {
+        if !mouth.isEmpty {
             let eyeMid = CGPoint(x: (left.x + right.x) / 2, y: (left.y + right.y) / 2)
             let mouthCenter = centroid(mouth)
             let toward = (mouthCenter.x - eyeMid.x) * vertical.x + (mouthCenter.y - eyeMid.y) * vertical.y
