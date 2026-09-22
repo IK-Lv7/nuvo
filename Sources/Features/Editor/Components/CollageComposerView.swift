@@ -72,7 +72,7 @@ struct CollageComposerView: View {
         GeometryReader { geometry in
             let side = min(geometry.size.width, geometry.size.height)
             ZStack {
-                Color(cgColor: background.ciColor.cgColor)
+                Color(uiColor: UIColor(ciColor: background.ciColor))
                 ForEach(Array(layout.slots.enumerated()), id: \.offset) { index, slot in
                     if thumbnails.indices.contains(index) {
                         let rect = CGRect(x: slot.minX * side, y: slot.minY * side,
