@@ -1,4 +1,5 @@
 import CoreGraphics
+import Foundation
 import NuvoCore
 
 /// スタンプ(SF Symbols)の追加・選択・移動。文字入れ(TextOverlay)と同じ考え方で、

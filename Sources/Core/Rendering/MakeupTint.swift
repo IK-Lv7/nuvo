@@ -1,7 +1,7 @@
 import CoreGraphics
 
 /// メイクの色。0...1 の RGB で持つ。SwiftUI の `Color` にも、加工計算の 0...255 の値にも変換できる。
-public struct MakeupTint: Codable, Equatable, Sendable {
+public struct MakeupTint: Codable, Equatable, Hashable, Sendable {
     public var red: Double
     public var green: Double
     public var blue: Double
