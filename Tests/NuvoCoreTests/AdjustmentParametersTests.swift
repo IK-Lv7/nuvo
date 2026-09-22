@@ -158,6 +158,34 @@ final class LookTests: XCTestCase {
         XCTAssertEqual(p.lookOnly().lipstickColor, LipstickPreset.plum.tint)
     }
 
+    func testBlushColorRoundTripsThroughJSON() throws {
+        var p = AdjustmentParameters()
+        p.blushColor = BlushPreset.coral.tint
+        let decoded = try JSONDecoder().decode(AdjustmentParameters.self, from: JSONEncoder().encode(p))
+        XCTAssertEqual(decoded.blushColor, BlushPreset.coral.tint)
+    }
+
+    func testSavedLooksWithoutABlushColorStillDecode() throws {
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(
+            with: JSONEncoder().encode(AdjustmentParameters())) as? [String: Any])
+        object.removeValue(forKey: "blushColor")
+        let data = try JSONSerialization.data(withJSONObject: object)
+        XCTAssertNoThrow(try JSONDecoder().decode(AdjustmentParameters.self, from: data))
+    }
+
+    func testChoosingABlushColorBreaksIdentity() {
+        var p = AdjustmentParameters()
+        p.blushColor = BlushPreset.mauve.tint
+        XCTAssertFalse(p.isIdentity)
+    }
+
+    func testLookKeepsTheChosenBlushColor() {
+        var p = AdjustmentParameters()
+        p.blush = 0.5
+        p.blushColor = BlushPreset.apricot.tint
+        XCTAssertEqual(p.lookOnly().blushColor, BlushPreset.apricot.tint)
+    }
+
     func testMaskStrokesRoundTripThroughJSON() throws {
         var p = AdjustmentParameters()
         p.maskStrokes = [MaskStroke(points: [CGPoint(x: 0.3, y: 0.4)], radius: 0.05, mode: .erase)]

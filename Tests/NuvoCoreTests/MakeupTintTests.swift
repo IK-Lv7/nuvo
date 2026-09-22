@@ -32,4 +32,18 @@ final class MakeupTintTests: XCTestCase {
         let tints = LipstickPreset.allCases.map(\.tint)
         XCTAssertEqual(Set(tints).count, tints.count)
     }
+
+    func testEveryBlushPresetIsWithinRange() {
+        for preset in BlushPreset.allCases {
+            let tint = preset.tint
+            XCTAssertTrue((0...1).contains(tint.red))
+            XCTAssertTrue((0...1).contains(tint.green))
+            XCTAssertTrue((0...1).contains(tint.blue))
+        }
+    }
+
+    func testBlushPresetsAreAllDistinctColors() {
+        let tints = BlushPreset.allCases.map(\.tint)
+        XCTAssertEqual(Set(tints).count, tints.count)
+    }
 }

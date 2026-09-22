@@ -15,6 +15,7 @@ enum EditorToolKind {
     case looks
     case people
     case lipstick
+    case blush
     case cutout
     case highResolution
     case stamp
@@ -33,6 +34,7 @@ struct EditorTool: Identifiable {
         case .text: 252
         case .looks: 140
         case .lipstick: 176
+        case .blush: 176
         case .cutout: 176
         case .stamp: 220
         default: 108
@@ -55,6 +57,7 @@ struct EditorTool: Identifiable {
         case .looks: false
         case .people: !p.excludedFaces.isEmpty
         case .lipstick: p.lipstick != 0 || p.lipstickColor != nil
+        case .blush: p.blush != 0 || p.blushColor != nil
         case .cutout: p.maskStrokes?.isEmpty == false
         case .highResolution: p.highResolution == true
         case .stamp: !(p.stamps ?? []).isEmpty
@@ -97,7 +100,7 @@ enum EditorCatalog {
         ]),
         ToolCategory(id: "makeup", icon: "paintbrush.pointed", tools: [
             EditorTool(id: "lipstick", icon: "mouth", kind: .lipstick),
-            EditorTool(id: "blush", icon: "circle.dotted", kind: .slider(\.blush, intensity)),
+            EditorTool(id: "blush", icon: "circle.dotted", kind: .blush),
             EditorTool(id: "eyebrow", icon: "eyebrow", kind: .slider(\.eyebrow, intensity)),
             EditorTool(id: "teethWhitening", icon: "sparkle", kind: .slider(\.teethWhitening, intensity)),
         ]),

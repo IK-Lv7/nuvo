@@ -37,3 +37,20 @@ public enum LipstickPreset: String, CaseIterable, Sendable {
         }
     }
 }
+
+/// チークに使う色見本。リップと同じ方針(一般的な言葉の名前、自作の初期値)。
+public enum BlushPreset: String, CaseIterable, Sendable {
+    case pink, coral, peach, rose, apricot, mauve
+
+    public var tint: MakeupTint {
+        switch self {
+        // 以前からの固定値。見本の並びでは基準として中央に置く。
+        case .pink: MakeupTint(r: 235, g: 110, b: 120)
+        case .coral: MakeupTint(r: 240, g: 130, b: 100)
+        case .peach: MakeupTint(r: 245, g: 170, b: 140)
+        case .rose: MakeupTint(r: 220, g: 100, b: 130)
+        case .apricot: MakeupTint(r: 235, g: 150, b: 110)
+        case .mauve: MakeupTint(r: 200, g: 120, b: 140)
+        }
+    }
+}

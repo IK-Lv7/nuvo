@@ -48,6 +48,8 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
     /// リップの色。nil は既定の色(LipstickPreset.rose と同じ)。
     public var lipstickColor: MakeupTint?
     public var blush: Double = 0
+    /// チークの色。nil は既定の色(BlushPreset.pink と同じ)。
+    public var blushColor: MakeupTint?
     public var eyebrow: Double = 0
     public var teethWhitening: Double = 0
     public var darkCircles: Double = 0

@@ -40,6 +40,8 @@ struct ToolPanel: View {
             highResolutionPanel
         case .lipstick:
             lipstickPanel
+        case .blush:
+            blushPanel
         case .cutout:
             cutoutPanel
         }
@@ -143,17 +145,39 @@ struct ToolPanel: View {
     private var lipstickPanel: some View {
         let currentColor = viewModel.parameters.lipstickColor ?? LipstickPreset.rose.tint
         return VStack(spacing: 8) {
-            LipstickColorRow(
+            ColorPresetRow(
+                presets: LipstickPreset.allCases,
+                tint: { $0.tint },
+                title: { LocalizedStringKey.dynamic("lipstick." + $0.rawValue) },
                 selected: currentColor,
                 onSelectPreset: { viewModel.setLipstickColor($0) },
-                customBinding: Binding(
-                    get: { Color(red: currentColor.red, green: currentColor.green, blue: currentColor.blue) },
-                    set: { color in
-                        guard let rgb = color.srgbComponents() else { return }
-                        viewModel.setLipstickColor(MakeupTint(red: rgb.red, green: rgb.green, blue: rgb.blue))
-                    }))
+                customBinding: colorBinding(current: currentColor, apply: { viewModel.setLipstickColor($0) }))
             sliderPanel(\.lipstick, AdjustmentParameters.intensityRange)
         }
+    }
+
+    private var blushPanel: some View {
+        let currentColor = viewModel.parameters.blushColor ?? BlushPreset.pink.tint
+        return VStack(spacing: 8) {
+            ColorPresetRow(
+                presets: BlushPreset.allCases,
+                tint: { $0.tint },
+                title: { LocalizedStringKey.dynamic("blush." + $0.rawValue) },
+                selected: currentColor,
+                onSelectPreset: { viewModel.setBlushColor($0) },
+                customBinding: colorBinding(current: currentColor, apply: { viewModel.setBlushColor($0) }))
+            sliderPanel(\.blush, AdjustmentParameters.intensityRange)
+        }
+    }
+
+    /// `ColorPresetRow` の「その他の色」用の Binding を作る。両方の色選びで同じ変換をする。
+    private func colorBinding(current: MakeupTint, apply: @escaping (MakeupTint) -> Void) -> Binding<Color> {
+        Binding(
+            get: { Color(red: current.red, green: current.green, blue: current.blue) },
+            set: { color in
+                guard let rgb = color.srgbComponents() else { return }
+                apply(MakeupTint(red: rgb.red, green: rgb.green, blue: rgb.blue))
+            })
     }
 
     private var cutoutPanel: some View {

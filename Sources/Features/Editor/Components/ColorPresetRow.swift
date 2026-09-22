@@ -1,25 +1,31 @@
 import NuvoCore
 import SwiftUI
 
-/// リップの色見本と、カラーコードで選べる「その他の色」。色を選ぶだけで、濃さは別のスライダーで扱う。
-struct LipstickColorRow: View {
+/// 色見本と、カラーコードで選べる「その他の色」の横並び一覧。色を選ぶだけで、濃さは別のスライダーで扱う。
+/// リップ・チークなど、色を選べるメイク項目で共通に使う(ChipStrip と同じ、呼び出し側が一覧を渡す形)。
+struct ColorPresetRow<Preset: Hashable>: View {
+    let presets: [Preset]
+    /// 見本の色。
+    let tint: (Preset) -> MakeupTint
+    /// 見本のラベルに使うローカライズキー("lipstick." + rawValue など)。
+    let title: (Preset) -> LocalizedStringKey
     let selected: MakeupTint
     let onSelectPreset: (MakeupTint) -> Void
     /// 「その他の色」を開いたときの、標準の色選択画面(カラーコードの入力も含む)。
     let customBinding: Binding<Color>
 
-    private var matchingPreset: LipstickPreset? {
-        LipstickPreset.allCases.first { $0.tint == selected }
+    private var matchingPreset: Preset? {
+        presets.first { tint($0) == selected }
     }
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 10) {
-                ForEach(LipstickPreset.allCases, id: \.self) { preset in
-                    swatch(color: preset.tint, isSelected: matchingPreset == preset) {
-                        onSelectPreset(preset.tint)
+                ForEach(presets, id: \.self) { preset in
+                    swatch(color: tint(preset), isSelected: matchingPreset == preset) {
+                        onSelectPreset(tint(preset))
                     } label: {
-                        Text(LocalizedStringKey.dynamic("lipstick." + preset.rawValue))
+                        Text(title(preset))
                     }
                 }
                 // 見本のどれとも一致しない色(=カラーコードで選んだ色)は、その他の欄に反映する。

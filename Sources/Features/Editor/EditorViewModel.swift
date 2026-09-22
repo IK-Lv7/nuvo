@@ -154,6 +154,11 @@ final class EditorViewModel {
         update { $0.lipstickColor = tint }
     }
 
+    /// チークの色を選ぶ。nil を渡すと既定の色に戻る。
+    func setBlushColor(_ tint: MakeupTint?) {
+        update { $0.blushColor = tint }
+    }
+
     /// 証明写真を選ぶ。背景が無地でなければ、規格で一般的な白にする。
     func setIDPhoto(_ spec: IDPhotoSpec?) {
         update {

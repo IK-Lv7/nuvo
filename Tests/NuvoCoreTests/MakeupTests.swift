@@ -101,6 +101,21 @@ final class MakeupTests: XCTestCase {
         XCTAssertEqual(withDefault, withRose)
     }
 
+    func testBlushColorChangesTheAppliedHue() {
+        // 青いチーク色を選んだら、赤ではなく青のほうへ寄る。
+        let blueBlush = MakeupAmounts(blush: 1, blushColor: MakeupTint(r: 40, g: 60, b: 200))
+        let result = layers(blush: 255).blended(smoothing: 0, brightness: 0, makeup: blueBlush)
+        XCTAssertGreaterThan(result[2], result[0])
+    }
+
+    func testDefaultBlushColorMatchesThePreviousFixedColor() {
+        // 色を指定しなければ、以前から固定だった色(現在の BlushPreset.pink)と同じ結果になる。
+        let withDefault = layers(blush: 255).blended(smoothing: 0, brightness: 0, makeup: MakeupAmounts(blush: 1))
+        let withPink = layers(blush: 255).blended(smoothing: 0, brightness: 0,
+                                                  makeup: MakeupAmounts(blush: 1, blushColor: BlushPreset.pink.tint))
+        XCTAssertEqual(withDefault, withPink)
+    }
+
     func testEyebrowDarkens() {
         let result = layers(brows: 255).blended(smoothing: 0, brightness: 0, makeup: MakeupAmounts(brows: 1))
         XCTAssertLessThan(result[1], 128)
