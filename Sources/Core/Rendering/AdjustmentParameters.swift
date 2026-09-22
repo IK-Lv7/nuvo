@@ -54,6 +54,19 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
     public var teethWhitening: Double = 0
     public var darkCircles: Double = 0
 
+    /// 目もと(すべて 0...1)。
+    public var eyeliner: Double = 0
+    public var eyelashes: Double = 0
+    public var eyeshadow: Double = 0
+    /// アイシャドウの色。nil は既定の色(EyeshadowPreset.brown と同じ)。
+    public var eyeshadowColor: MakeupTint?
+    /// カラコン(カラーコンタクト)の濃さ。
+    public var lens: Double = 0
+    /// カラコンの色。nil は既定の色(LensPreset.brown と同じ)。
+    public var lensColor: MakeupTint?
+    /// 涙袋のハイライト。
+    public var tearBags: Double = 0
+
     /// 背景。単色は人物マスクが取れているときだけ効く。単色を選ぶとぼかしより優先される。
     public var backgroundBlur: Double = 0
     public var backgroundColor: BackgroundColor?
@@ -113,6 +126,7 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
     var hasSkinOrMakeup: Bool {
         skinSmoothing != 0 || skinBrightness != 0 || skinFlush != 0 || noseBridge != 0 || lipstick != 0 || blush != 0 || eyebrow != 0
             || teethWhitening != 0 || darkCircles != 0
+            || eyeliner != 0 || eyelashes != 0 || eyeshadow != 0 || lens != 0 || tearBags != 0
     }
 
     /// 範囲外の値を有効範囲に収めた複製を返す。
@@ -133,6 +147,11 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
         result.eyebrow = Self.clamp(eyebrow, to: Self.intensityRange)
         result.teethWhitening = Self.clamp(teethWhitening, to: Self.intensityRange)
         result.darkCircles = Self.clamp(darkCircles, to: Self.intensityRange)
+        result.eyeliner = Self.clamp(eyeliner, to: Self.intensityRange)
+        result.eyelashes = Self.clamp(eyelashes, to: Self.intensityRange)
+        result.eyeshadow = Self.clamp(eyeshadow, to: Self.intensityRange)
+        result.lens = Self.clamp(lens, to: Self.intensityRange)
+        result.tearBags = Self.clamp(tearBags, to: Self.intensityRange)
         result.backgroundBlur = Self.clamp(backgroundBlur, to: Self.intensityRange)
         result.sharpness = Self.clamp(sharpness, to: Self.intensityRange)
         result.vignette = Self.clamp(vignette, to: Self.intensityRange)
@@ -152,6 +171,18 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
 
     private static func clamp(_ value: Double, to range: ClosedRange<Double>) -> Double {
         min(max(value, range.lowerBound), range.upperBound)
+    }
+
+    /// 以前のバージョンで保存された JSON を読む。あとから増えた項目が入っていなくても、
+    /// 既定値で埋めて読めるようにする(保存済みのルックが、更新のたびに消えないようにするため)。
+    /// 調整項目を増やすときは、この仕組みがあるので `Optional` にしなくてよい。
+    public static func lenientlyDecoded(from object: [String: Any]) -> AdjustmentParameters? {
+        guard let defaultData = try? JSONEncoder().encode(AdjustmentParameters()),
+              let defaults = (try? JSONSerialization.jsonObject(with: defaultData)) as? [String: Any] else { return nil }
+        // 保存されていた値を、既定値の上に重ねる。知らない項目は読み捨てられる。
+        let merged = defaults.merging(object) { _, saved in saved }
+        guard let data = try? JSONSerialization.data(withJSONObject: merged) else { return nil }
+        return try? JSONDecoder().decode(AdjustmentParameters.self, from: data)
     }
 
     /// 「ルック」として保存・適用する範囲。写真ごとの内容(修復の位置・構図・文字・スタンプ・証明写真・加工する人・切り抜きの直し)は含めない。

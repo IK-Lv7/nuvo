@@ -65,6 +65,45 @@ public enum FaceGeometry {
          CGPoint(x: rect.maxX, y: rect.maxY), CGPoint(x: rect.minX, y: rect.maxY)]
     }
 
+    /// 目の輪郭を、上まぶた側と下まぶた側の折れ線に分ける。
+    /// 点の並び順は Vision の仕様に依存しないため、目頭と目尻(左右の端)を結んだ線より
+    /// 上にあるか下にあるかで振り分ける。どちらの折れ線も、両端の角を含めて左から右へ並べる。
+    /// 点が少ない・左右の端が重なるなど、線にならない場合は nil。
+    public static func eyelids(_ eye: [CGPoint]) -> (upper: [CGPoint], lower: [CGPoint])? {
+        guard eye.count >= 4 else { return nil }
+        let sorted = eye.sorted { $0.x < $1.x }
+        guard let inner = sorted.first, let outer = sorted.last, outer.x > inner.x else { return nil }
+        let slope = (outer.y - inner.y) / (outer.x - inner.x)
+        var upper: [CGPoint] = []
+        var lower: [CGPoint] = []
+        for point in sorted.dropFirst().dropLast() {
+            // 画像座標は下へ行くほど y が大きいので、線より小さい y が上まぶた。
+            if point.y < inner.y + (point.x - inner.x) * slope {
+                upper.append(point)
+            } else {
+                lower.append(point)
+            }
+        }
+        guard !upper.isEmpty, !lower.isEmpty else { return nil }
+        return ([inner] + upper + [outer], [inner] + lower + [outer])
+    }
+
+    /// 折れ線を縦にずらす(正で下へ)。まぶたの線から、アイシャドウや涙袋の位置を作るのに使う。
+    /// 入力と同じ座標系のまま動かすだけなので、正規化座標でもピクセル座標でも使える。
+    public static func offset(_ points: [CGPoint], dy: CGFloat) -> [CGPoint] {
+        points.map { CGPoint(x: $0.x, y: $0.y + dy) }
+    }
+
+    /// 瞳の中心。Vision の瞳の点が取れていればそれを、取れていなければ目の輪郭の重心を使う。
+    /// Vision の left / right の付け方に依存しないよう、その目の枠に入っている点を選ぶ。
+    public static func pupilCenter(for eye: [CGPoint], pupils: [CGPoint]) -> CGPoint? {
+        guard eye.count >= 3 else { return nil }
+        let box = boundingRect(of: eye)
+        // まぶたが細いと瞳の点が枠の外に出ることがあるため、縦に広めに見る。
+        let search = box.insetBy(dx: -box.width * 0.1, dy: -box.height * 0.6)
+        return pupils.first { search.contains($0) } ?? centroid(eye)
+    }
+
     /// チークを乗せる位置(両頬)。目の真下からやや外側、目と口の高さの中間。
     /// 頬の高い位置に乗せると顔が立体的に見える。目と口の x の中間まで寄せると鼻の脇になり不自然。
     /// 左右の判定は画像上の位置で行うため、Vision の left / right の定義に依存しない。

@@ -45,7 +45,10 @@ Slim the face, enlarge the eyes, refine the chin, and shape the nose — followi
 When a photo has more than one person, choose whose face to retouch: tap a face to turn it on or off, or draw a circle around the people you want. Everyone else is left exactly as they are.
 
 **Makeup**
-Lipstick, blush, brows, and teeth whitening that stay put on your face and keep the natural highlights and texture underneath. Lipstick and blush both come in a few named shades, plus a color picker for an exact shade.
+Lipstick, blush, brows, and teeth whitening that stay put on your face and keep the natural highlights and texture underneath. Lipstick, blush, and eyeshadow come in a few named shades, plus a color picker for an exact shade.
+
+**Eyes**
+Eyeliner, fuller lashes, eyeshadow, tinted lenses, and a soft under-eye highlight — all following your own eye shape. Lashes are darkened where your lashes already are, so nothing looks drawn on, and the lens tint keeps the texture of your iris.
 
 **Backgrounds and ID photos**
 Blur or replace the background. Portrait Mode photos use their built-in depth data for a more natural blur. If the automatic cutout misses a spot, fix it with an adjustable pen: paint to add or erase from the person. Make an ID photo with one tap: 35 × 45 mm (passport / My Number card) or 30 × 40 mm (résumé).\*

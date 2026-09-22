@@ -35,13 +35,17 @@ struct ToolPanel: View {
         case .looks:
             LooksPanel(viewModel: viewModel, store: lookStore)
         case .people:
-            peoplePanel
+            PeopleToolPanel(viewModel: viewModel)
         case .highResolution:
-            highResolutionPanel
+            HighResolutionToolPanel(viewModel: viewModel)
         case .lipstick:
             lipstickPanel
         case .blush:
             blushPanel
+        case .eyeshadow:
+            eyeshadowPanel
+        case .lens:
+            lensPanel
         case .cutout:
             cutoutPanel
         }
@@ -170,7 +174,35 @@ struct ToolPanel: View {
         }
     }
 
-    /// `ColorPresetRow` の「その他の色」用の Binding を作る。両方の色選びで同じ変換をする。
+    private var eyeshadowPanel: some View {
+        let currentColor = viewModel.parameters.eyeshadowColor ?? EyeshadowPreset.brown.tint
+        return VStack(spacing: 8) {
+            ColorPresetRow(
+                presets: EyeshadowPreset.allCases,
+                tint: { $0.tint },
+                title: { LocalizedStringKey.dynamic("eyeshadow." + $0.rawValue) },
+                selected: currentColor,
+                onSelectPreset: { viewModel.setEyeshadowColor($0) },
+                customBinding: colorBinding(current: currentColor, apply: { viewModel.setEyeshadowColor($0) }))
+            sliderPanel(\.eyeshadow, AdjustmentParameters.intensityRange)
+        }
+    }
+
+    private var lensPanel: some View {
+        let currentColor = viewModel.parameters.lensColor ?? LensPreset.brown.tint
+        return VStack(spacing: 8) {
+            ColorPresetRow(
+                presets: LensPreset.allCases,
+                tint: { $0.tint },
+                title: { LocalizedStringKey.dynamic("lens." + $0.rawValue) },
+                selected: currentColor,
+                onSelectPreset: { viewModel.setLensColor($0) },
+                customBinding: colorBinding(current: currentColor, apply: { viewModel.setLensColor($0) }))
+            sliderPanel(\.lens, AdjustmentParameters.intensityRange)
+        }
+    }
+
+    /// `ColorPresetRow` の「その他の色」用の Binding を作る。どの色選びでも同じ変換をする。
     private func colorBinding(current: MakeupTint, apply: @escaping (MakeupTint) -> Void) -> Binding<Color> {
         Binding(
             get: { Color(red: current.red, green: current.green, blue: current.blue) },
@@ -200,40 +232,6 @@ struct ToolPanel: View {
             } else {
                 Text("cutout.hint").font(.footnote).foregroundStyle(.secondary)
             }
-        }
-    }
-
-    private var peoplePanel: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 10) {
-                Text("people.summary \(viewModel.selectedFaces.count) \(viewModel.detectedFaces.count)")
-                    .font(.subheadline.weight(.semibold))
-                    .monospacedDigit()
-                Button { viewModel.selectAllFaces() } label: {
-                    Label("people.all", systemImage: "person.2.fill")
-                }
-                .buttonStyle(PillButtonStyle())
-                .disabled(viewModel.parameters.excludedFaces.isEmpty)
-                .opacity(viewModel.parameters.excludedFaces.isEmpty ? 0.5 : 1)
-            }
-            if viewModel.hasComposition {
-                Text("people.blockedByComposition").font(.footnote).foregroundStyle(.orange)
-            } else {
-                Text("people.hint").font(.footnote).foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    private var highResolutionPanel: some View {
-        VStack(spacing: 8) {
-            Button {
-                viewModel.update { $0.highResolution = !($0.highResolution == true) }
-            } label: {
-                Label(viewModel.parameters.highResolution == true ? "editor.on" : "editor.off",
-                      systemImage: viewModel.parameters.highResolution == true ? "checkmark.circle.fill" : "circle")
-            }
-            .buttonStyle(PillButtonStyle(isOn: viewModel.parameters.highResolution == true))
-            Text("highResolution.hint").font(.footnote).foregroundStyle(.secondary)
         }
     }
 

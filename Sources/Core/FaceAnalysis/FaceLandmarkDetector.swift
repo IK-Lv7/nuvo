@@ -26,6 +26,7 @@ public struct FaceLandmarkDetector: Sendable {
             leftEye: points(landmarks.leftEye), rightEye: points(landmarks.rightEye),
             leftEyebrow: points(landmarks.leftEyebrow), rightEyebrow: points(landmarks.rightEyebrow),
             outerLips: points(landmarks.outerLips), innerLips: points(landmarks.innerLips),
-            nose: points(landmarks.nose), noseCrest: points(landmarks.noseCrest))
+            nose: points(landmarks.nose), noseCrest: points(landmarks.noseCrest),
+            leftPupil: points(landmarks.leftPupil), rightPupil: points(landmarks.rightPupil))
     }
 }

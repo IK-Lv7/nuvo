@@ -38,6 +38,40 @@ public enum LipstickPreset: String, CaseIterable, Sendable {
     }
 }
 
+/// アイシャドウに使う色見本。リップと同じ方針(一般的な言葉の名前、自作の初期値)。
+public enum EyeshadowPreset: String, CaseIterable, Sendable {
+    case brown, pink, coral, gold, khaki, lavender
+
+    public var tint: MakeupTint {
+        switch self {
+        // 既定色。いちばん使いやすい、肌になじむ茶。
+        case .brown: MakeupTint(r: 150, g: 105, b: 85)
+        case .pink: MakeupTint(r: 215, g: 140, b: 150)
+        case .coral: MakeupTint(r: 220, g: 135, b: 110)
+        case .gold: MakeupTint(r: 205, g: 165, b: 100)
+        case .khaki: MakeupTint(r: 140, g: 135, b: 95)
+        case .lavender: MakeupTint(r: 160, g: 140, b: 190)
+        }
+    }
+}
+
+/// カラコン(カラーコンタクト)に使う色見本。虹彩の模様は輝度として残すので、色味だけを決める。
+public enum LensPreset: String, CaseIterable, Sendable {
+    case brown, hazel, gray, blue, green, olive
+
+    public var tint: MakeupTint {
+        switch self {
+        // 既定色。日本人の瞳になじむ明るい茶。
+        case .brown: MakeupTint(r: 110, g: 75, b: 50)
+        case .hazel: MakeupTint(r: 145, g: 110, b: 60)
+        case .gray: MakeupTint(r: 110, g: 110, b: 115)
+        case .blue: MakeupTint(r: 80, g: 120, b: 165)
+        case .green: MakeupTint(r: 85, g: 130, b: 100)
+        case .olive: MakeupTint(r: 120, g: 120, b: 80)
+        }
+    }
+}
+
 /// チークに使う色見本。リップと同じ方針(一般的な言葉の名前、自作の初期値)。
 public enum BlushPreset: String, CaseIterable, Sendable {
     case pink, coral, peach, rose, apricot, mauve

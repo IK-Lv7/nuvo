@@ -158,6 +158,71 @@ final class LookTests: XCTestCase {
         XCTAssertEqual(p.lookOnly().lipstickColor, LipstickPreset.plum.tint)
     }
 
+    func testEyeMakeupIsClampedToUnitRange() {
+        var p = AdjustmentParameters()
+        p.eyeliner = 3
+        p.eyelashes = -1
+        p.eyeshadow = 2
+        p.lens = -2
+        p.tearBags = 5
+        let clamped = p.clamped()
+        XCTAssertEqual(clamped.eyeliner, 1)
+        XCTAssertEqual(clamped.eyelashes, 0)
+        XCTAssertEqual(clamped.eyeshadow, 1)
+        XCTAssertEqual(clamped.lens, 0)
+        XCTAssertEqual(clamped.tearBags, 1)
+    }
+
+    func testEyeMakeupCountsAsMakeup() {
+        for keyPath: WritableKeyPath<AdjustmentParameters, Double> in
+            [\.eyeliner, \.eyelashes, \.eyeshadow, \.lens, \.tearBags] {
+            var p = AdjustmentParameters()
+            p[keyPath: keyPath] = 0.5
+            XCTAssertTrue(p.hasSkinOrMakeup)
+            XCTAssertFalse(p.isIdentity)
+        }
+    }
+
+    func testEyeMakeupRoundTripsThroughJSON() throws {
+        var p = AdjustmentParameters()
+        p.eyeliner = 0.4
+        p.eyeshadow = 0.6
+        p.eyeshadowColor = EyeshadowPreset.lavender.tint
+        p.lens = 0.3
+        p.lensColor = LensPreset.gray.tint
+        p.tearBags = 0.2
+        let decoded = try JSONDecoder().decode(AdjustmentParameters.self, from: JSONEncoder().encode(p))
+        XCTAssertEqual(decoded, p)
+    }
+
+    // MARK: 以前のバージョンで保存した値の読み込み
+
+    func testLenientDecodingFillsInValuesThatDidNotExistYet() throws {
+        // 目もとの項目が無かった頃に保存された内容を模した JSON。
+        let saved: [String: Any] = ["skinSmoothing": 0.5, "lipstick": 0.3]
+        let decoded = try XCTUnwrap(AdjustmentParameters.lenientlyDecoded(from: saved))
+        XCTAssertEqual(decoded.skinSmoothing, 0.5)
+        XCTAssertEqual(decoded.lipstick, 0.3)
+        // 増えた項目は既定値(0)で埋まる。
+        XCTAssertEqual(decoded.eyeliner, 0)
+        XCTAssertEqual(decoded.tearBags, 0)
+        XCTAssertNil(decoded.eyeshadowColor)
+    }
+
+    func testLenientDecodingKeepsEverySavedValue() throws {
+        var p = AdjustmentParameters()
+        p.skinSmoothing = 0.7
+        p.eyeshadow = 0.4
+        p.eyeshadowColor = EyeshadowPreset.gold.tint
+        p.texts = [TextOverlay(text: "A")]
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(p)) as? [String: Any])
+        XCTAssertEqual(AdjustmentParameters.lenientlyDecoded(from: object), p)
+    }
+
+    func testLenientDecodingRejectsValuesOfTheWrongType() {
+        XCTAssertNil(AdjustmentParameters.lenientlyDecoded(from: ["skinSmoothing": "とても強く"]))
+    }
+
     func testBlushColorRoundTripsThroughJSON() throws {
         var p = AdjustmentParameters()
         p.blushColor = BlushPreset.coral.tint

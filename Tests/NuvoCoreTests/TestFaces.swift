@@ -22,9 +22,21 @@ enum TestFaces {
             [CGPoint(x: cx - w / 2, y: cy - h / 2), CGPoint(x: cx + w / 2, y: cy - h / 2),
              CGPoint(x: cx + w / 2, y: cy + h / 2), CGPoint(x: cx - w / 2, y: cy + h / 2)]
         }
+        // 目は、上下のまぶたを見分けられる形にする(実際の Vision の輪郭と同じく、x が重ならない 6 点)。
+        // 枠と重心は box と同じなので、目の位置を使う既存のテストには影響しない。
+        func eye(_ cx: CGFloat, _ cy: CGFloat, _ w: CGFloat, _ h: CGFloat) -> [CGPoint] {
+            [CGPoint(x: cx - w / 2, y: cy),                  // 目頭
+             CGPoint(x: cx - w / 6, y: cy - h / 2),          // 上まぶた
+             CGPoint(x: cx + w / 6, y: cy - h / 2),
+             CGPoint(x: cx + w / 2, y: cy),                  // 目尻
+             CGPoint(x: cx + w / 6, y: cy + h / 2),          // 下まぶた
+             CGPoint(x: cx - w / 6, y: cy + h / 2)]
+        }
         var face = square()
-        face.leftEye = box(0.4, 0.45, 0.12, 0.05)
-        face.rightEye = box(0.6, 0.45, 0.12, 0.05)
+        face.leftEye = eye(0.4, 0.45, 0.12, 0.05)
+        face.rightEye = eye(0.6, 0.45, 0.12, 0.05)
+        face.leftPupil = [CGPoint(x: 0.4, y: 0.45)]
+        face.rightPupil = [CGPoint(x: 0.6, y: 0.45)]
         face.leftEyebrow = box(0.4, 0.38, 0.14, 0.03)
         face.rightEyebrow = box(0.6, 0.38, 0.14, 0.03)
         face.outerLips = box(0.5, 0.7, 0.2, 0.1)

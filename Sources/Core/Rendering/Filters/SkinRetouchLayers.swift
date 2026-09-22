@@ -11,8 +11,19 @@ struct MakeupAmounts: Equatable, Sendable {
     var teeth = 0.0
     var darkCircles = 0.0
     var noseBridge = 0.0
+    /// 目もと。アイライン・まつげ・アイシャドウ・カラコン・涙袋。
+    var eyeliner = 0.0
+    var lashes = 0.0
+    var eyeshadow = 0.0
+    var eyeshadowColor = EyeshadowPreset.brown.tint
+    var lens = 0.0
+    var lensColor = LensPreset.brown.tint
+    var tearBags = 0.0
 
-    var isNone: Bool { lips == 0 && blush == 0 && brows == 0 && teeth == 0 && darkCircles == 0 && noseBridge == 0 }
+    var isNone: Bool {
+        lips == 0 && blush == 0 && brows == 0 && teeth == 0 && darkCircles == 0 && noseBridge == 0
+            && eyeliner == 0 && lashes == 0 && eyeshadow == 0 && lens == 0 && tearBags == 0
+    }
 }
 
 /// 1人分の顔領域について、元画像・平滑化済み画像・各種マスクを保持する。
@@ -35,6 +46,17 @@ final class SkinRetouchLayers: @unchecked Sendable {
     /// 歯は白くしすぎると不自然(作り物に見える)ため、8 割で止める。
     private static let teethCap: Float = 0.8
     private static let darkCircleCap: Float = 0.7
+    /// アイラインは、線としてはっきり出す必要があるため濃めまで許す。まつげはその手前で止める。
+    private static let eyelinerCap: Float = 0.85
+    private static let lashesCap: Float = 0.7
+    /// アイシャドウは色を乗せる面が広いため、「塗った感」が出る手前で止める。
+    private static let eyeshadowCap: Float = 0.55
+    /// カラコンは、虹彩の模様が輝度として残る範囲で止める。強いと作り物の目に見える。
+    private static let lensCap: Float = 0.65
+    /// 涙袋は、白く浮かない範囲のごく浅いハイライト。
+    private static let tearBagCap: Float = 0.18
+    /// アイライン・まつげの色。真っ黒だと硬く見えるため、わずかに茶色を混ぜる(初期値)。
+    private static let linerColor: (Float, Float, Float) = (38, 32, 34)
     /// 血色 ±1 での赤・緑・青の増減(0〜255 の値)。赤を足して緑・青を少し抜くと、明るさをほぼ変えずに赤みだけが動く
     /// (0.299×14 − 0.587×6 − 0.114×4 ≈ 0)。初期値で、実機で見て調整する。
     private static let flushShift: (Float, Float, Float) = (14, -6, -4)
@@ -82,6 +104,11 @@ final class SkinRetouchLayers: @unchecked Sendable {
         let teethAmount = Float(min(max(makeup.teeth, 0), 1)) * Self.teethCap
         let circleAmount = Float(min(max(makeup.darkCircles, 0), 1)) * Self.darkCircleCap
         let noseAmount = Float(min(max(makeup.noseBridge, 0), 1))
+        let linerAmount = Float(min(max(makeup.eyeliner, 0), 1)) * Self.eyelinerCap
+        let lashAmount = Float(min(max(makeup.lashes, 0), 1)) * Self.lashesCap
+        let shadowAmount = Float(min(max(makeup.eyeshadow, 0), 1)) * Self.eyeshadowCap
+        let lensAmount = Float(min(max(makeup.lens, 0), 1)) * Self.lensCap
+        let tearAmount = Float(min(max(makeup.tearBags, 0), 1)) * Self.tearBagCap
 
         var out = original
         for i in 0..<(width * height) {
@@ -92,7 +119,13 @@ final class SkinRetouchLayers: @unchecked Sendable {
             let teethMask = masks.map { Self.value($0.teeth, i) } ?? 0
             let circleMask = masks.map { Self.value($0.darkCircles, i) } ?? 0
             let noseMask = masks.map { Self.value($0.noseBridge, i) } ?? 0
-            guard m > 0 || noseMask > 0 || lipMask > 0 || browMask > 0 || blushMask > 0 || teethMask > 0 || circleMask > 0 else {
+            let linerMask = masks.map { Self.value($0.eyeliner, i) } ?? 0
+            let lashMask = masks.map { Self.value($0.lashes, i) } ?? 0
+            let shadowMask = masks.map { Self.value($0.eyeshadow, i) } ?? 0
+            let irisMask = masks.map { Self.value($0.iris, i) } ?? 0
+            let tearMask = masks.map { Self.value($0.tearBags, i) } ?? 0
+            guard m > 0 || noseMask > 0 || lipMask > 0 || browMask > 0 || blushMask > 0 || teethMask > 0 || circleMask > 0
+                || linerMask > 0 || lashMask > 0 || shadowMask > 0 || irisMask > 0 || tearMask > 0 else {
                 continue
             }
 
@@ -110,8 +143,16 @@ final class SkinRetouchLayers: @unchecked Sendable {
             rgb = Self.colorize(rgb, target: makeup.blushColor.rgb255, amount: blushMask * blushAmount)
             rgb = Self.colorize(rgb, target: makeup.lipColor.rgb255, amount: lipMask * lipAmount)
             rgb = Self.colorize(rgb, target: Self.browColor, amount: browMask * browAmount)
+            // 目もとは、アイシャドウ(広い面)→ まつげ → アイライン(細い線)の順に重ねる。
+            // アイライン・まつげは確実に暗くしたいので、輝度を保つ colorize ではなく paint を使う。
+            rgb = Self.colorize(rgb, target: makeup.eyeshadowColor.rgb255, amount: shadowMask * shadowAmount)
+            rgb = Self.paint(rgb, target: Self.linerColor, amount: lashMask * lashAmount)
+            rgb = Self.paint(rgb, target: Self.linerColor, amount: linerMask * linerAmount)
+            // カラコンは虹彩の模様(輝度)を残したいので colorize。
+            rgb = Self.colorize(rgb, target: makeup.lensColor.rgb255, amount: irisMask * lensAmount)
             rgb = Self.whiten(rgb, amount: teethMask * teethAmount)
             rgb = Self.lift(rgb, amount: noseMask * noseAmount * Self.noseBridgeLift)
+            rgb = Self.lift(rgb, amount: tearMask * tearAmount)
             if circleMask > 0 {
                 let sm = (Float(smoothed[i * 4]), Float(smoothed[i * 4 + 1]), Float(smoothed[i * 4 + 2]))
                 rgb = Self.liftDarkCircle(rgb, smoothed: sm, amount: circleMask * circleAmount)
@@ -146,6 +187,15 @@ final class SkinRetouchLayers: @unchecked Sendable {
         func luma(_ c: (Float, Float, Float)) -> Float { 0.299 * c.0 + 0.587 * c.1 + 0.114 * c.2 }
         let shift = luma(rgb) - luma(target)
         func mix(_ o: Float, _ t: Float) -> Float { o + (min(max(t + shift, 0), 255) - o) * amount }
+        return (mix(rgb.0, target.0), mix(rgb.1, target.1), mix(rgb.2, target.2))
+    }
+
+    /// 目標色そのものへ寄せる(輝度も動かす)。アイラインのように、確実に暗くしたいときに使う。
+    /// `colorize` と違って元の明るさを保たないため、線や点のような細い領域にだけ使う。
+    private static func paint(_ rgb: (Float, Float, Float), target: (Float, Float, Float),
+                              amount: Float) -> (Float, Float, Float) {
+        guard amount > 0 else { return rgb }
+        func mix(_ o: Float, _ t: Float) -> Float { o + (t - o) * amount }
         return (mix(rgb.0, target.0), mix(rgb.1, target.1), mix(rgb.2, target.2))
     }
 

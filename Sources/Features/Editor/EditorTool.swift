@@ -16,6 +16,8 @@ enum EditorToolKind {
     case people
     case lipstick
     case blush
+    case eyeshadow
+    case lens
     case cutout
     case highResolution
     case stamp
@@ -35,6 +37,8 @@ struct EditorTool: Identifiable {
         case .looks: 140
         case .lipstick: 176
         case .blush: 176
+        case .eyeshadow: 176
+        case .lens: 176
         case .cutout: 176
         case .stamp: 220
         default: 108
@@ -58,6 +62,8 @@ struct EditorTool: Identifiable {
         case .people: !p.excludedFaces.isEmpty
         case .lipstick: p.lipstick != 0 || p.lipstickColor != nil
         case .blush: p.blush != 0 || p.blushColor != nil
+        case .eyeshadow: p.eyeshadow != 0 || p.eyeshadowColor != nil
+        case .lens: p.lens != 0 || p.lensColor != nil
         case .cutout: p.maskStrokes?.isEmpty == false
         case .highResolution: p.highResolution == true
         case .stamp: !(p.stamps ?? []).isEmpty
@@ -103,6 +109,13 @@ enum EditorCatalog {
             EditorTool(id: "blush", icon: "circle.dotted", kind: .blush),
             EditorTool(id: "eyebrow", icon: "eyebrow", kind: .slider(\.eyebrow, intensity)),
             EditorTool(id: "teethWhitening", icon: "sparkle", kind: .slider(\.teethWhitening, intensity)),
+        ]),
+        ToolCategory(id: "eye", icon: "eye", tools: [
+            EditorTool(id: "eyeliner", icon: "pencil.tip", kind: .slider(\.eyeliner, intensity)),
+            EditorTool(id: "eyelashes", icon: "eye.circle", kind: .slider(\.eyelashes, intensity)),
+            EditorTool(id: "eyeshadow", icon: "paintbrush.pointed.fill", kind: .eyeshadow),
+            EditorTool(id: "lens", icon: "record.circle", kind: .lens),
+            EditorTool(id: "tearBags", icon: "drop.circle", kind: .slider(\.tearBags, intensity)),
         ]),
         ToolCategory(id: "background", icon: "person.and.background.dotted", tools: [
             EditorTool(id: "backgroundBlur", icon: "aperture", kind: .slider(\.backgroundBlur, intensity)),

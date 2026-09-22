@@ -16,9 +16,26 @@ final class LookStore {
     private let key = "looks.v1"
 
     init() {
-        guard let data = UserDefaults.standard.data(forKey: key),
-              let decoded = try? JSONDecoder().decode([Look].self, from: data) else { return }
-        looks = decoded
+        guard let data = UserDefaults.standard.data(forKey: key) else { return }
+        if let decoded = try? JSONDecoder().decode([Look].self, from: data) {
+            looks = decoded
+            return
+        }
+        // 調整項目が増えると、以前のバージョンで保存したルックはそのままでは読めない。
+        // 既定値で埋めて読み直し、黙って全部消えないようにする。
+        looks = Self.looksFillingMissingValues(from: data)
+    }
+
+    /// 項目が足りない JSON を、既定値で埋めながら読む。読めないルックだけを捨てる。
+    private static func looksFillingMissingValues(from data: Data) -> [Look] {
+        guard let array = (try? JSONSerialization.jsonObject(with: data)) as? [[String: Any]] else { return [] }
+        return array.compactMap { entry in
+            guard let name = entry["name"] as? String,
+                  let saved = entry["parameters"] as? [String: Any],
+                  let parameters = AdjustmentParameters.lenientlyDecoded(from: saved) else { return nil }
+            let id = (entry["id"] as? String).flatMap { UUID(uuidString: $0) } ?? UUID()
+            return Look(id: id, name: name, parameters: parameters)
+        }
     }
 
     /// 写真ごとの内容(修復位置・構図・文字・証明写真)を除いて保存する。

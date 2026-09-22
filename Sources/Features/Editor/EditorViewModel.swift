@@ -161,6 +161,16 @@ final class EditorViewModel {
         update { $0.blushColor = tint }
     }
 
+    /// アイシャドウの色を選ぶ。nil を渡すと既定の色に戻る。
+    func setEyeshadowColor(_ tint: MakeupTint?) {
+        update { $0.eyeshadowColor = tint }
+    }
+
+    /// カラコンの色を選ぶ。nil を渡すと既定の色に戻る。
+    func setLensColor(_ tint: MakeupTint?) {
+        update { $0.lensColor = tint }
+    }
+
     /// 証明写真を選ぶ。背景が無地でなければ、規格で一般的な白にする。
     func setIDPhoto(_ spec: IDPhotoSpec?) {
         update {

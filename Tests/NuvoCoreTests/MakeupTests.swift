@@ -175,6 +175,100 @@ final class MakeupTests: XCTestCase {
         XCTAssertGreaterThan(result[0], 100)
     }
 
+    // MARK: 目もと
+
+    /// 目は中心 (0.4, 0.45)・横幅 0.12・高さ 0.05 → ピクセルでは中心 (40, 45)、上まぶた y=42.5、下まぶた y=47.5。
+    func testEyelinerSitsOnTheUpperLidNotTheLower() {
+        let m = masks()
+        XCTAssertGreaterThan(m.eyeliner[42 * side + 40], 100)
+        XCTAssertEqual(m.eyeliner[52 * side + 40], 0)   // 下まぶたより下には出ない
+        XCTAssertEqual(m.eyeliner[20 * side + 40], 0)   // 眉の高さには出ない
+    }
+
+    func testEyeshadowReachesAboveTheLidAndAvoidsTheEyeItself() {
+        let m = masks()
+        // 上まぶたより上(まぶたの皮膚)に乗る。
+        XCTAssertGreaterThan(m.eyeshadow[40 * side + 40], 50)
+        // 目の中(白目・黒目)は抜いてある。
+        XCTAssertEqual(m.eyeshadow[45 * side + 40], 0)
+    }
+
+    func testLashesOnlyDarkenPixelsThatAreAlreadyDark() {
+        // 明るい肌色だけの写真では、まつげとして濃くする画素がない。
+        XCTAssertTrue(masks().lashes.allSatisfy { $0 == 0 })
+        // まつげのような暗い画素があれば、そこにマスクが出る。
+        let dark = masks(pixels: flat(30, 28, 30))
+        XCTAssertGreaterThan(dark.lashes[42 * side + 40], 100)
+    }
+
+    func testIrisMaskIsAroundThePupilAndInsideTheEye() {
+        // 虹彩は中間の明るさのときだけ乗る(瞳孔の黒や映り込みの白は避ける)。
+        let m = masks(pixels: flat(110, 105, 100))
+        XCTAssertGreaterThan(m.iris[45 * side + 40], 100)   // 瞳の中心
+        XCTAssertEqual(m.iris[45 * side + 50], 0)           // 目と目の間(どちらの目の輪郭にも入らない)
+        XCTAssertEqual(m.iris[70 * side + 40], 0)           // 口のあたり
+    }
+
+    func testIrisMaskSkipsTheDarkPupilAndBrightCatchlight() {
+        XCTAssertTrue(masks(pixels: flat(10, 10, 10)).iris.allSatisfy { $0 == 0 })
+        XCTAssertTrue(masks(pixels: flat(250, 250, 250)).iris.allSatisfy { $0 == 0 })
+    }
+
+    func testTearBagsSitBelowTheLowerLid() {
+        let m = masks()
+        XCTAssertGreaterThan(m.tearBags[49 * side + 40], 50)
+        XCTAssertEqual(m.tearBags[45 * side + 40], 0)   // 目の中には出ない
+        XCTAssertEqual(m.tearBags[40 * side + 40], 0)   // 上まぶた側には出ない
+    }
+
+    // MARK: 目もとの合成
+
+    private func eyeLayer(eyeliner: UInt8 = 0, lashes: UInt8 = 0, eyeshadow: UInt8 = 0,
+                          iris: UInt8 = 0, tearBags: UInt8 = 0) -> SkinRetouchLayers {
+        let gray: [UInt8] = [128, 128, 128, 255]
+        return SkinRetouchLayers(roi: CGRect(x: 0, y: 0, width: 1, height: 1), width: 1, height: 1,
+                                 original: gray, smoothed: gray, mask: [0],
+                                 makeupMasks: MakeupMasks(lips: [0], brows: [0], blush: [0],
+                                                          eyeliner: [eyeliner], lashes: [lashes],
+                                                          eyeshadow: [eyeshadow], iris: [iris],
+                                                          tearBags: [tearBags]))
+    }
+
+    func testEyelinerDarkens() {
+        let result = eyeLayer(eyeliner: 255).blended(smoothing: 0, brightness: 0, makeup: MakeupAmounts(eyeliner: 1))
+        XCTAssertLessThan(result[0], 100)
+    }
+
+    func testLashesDarken() {
+        let result = eyeLayer(lashes: 255).blended(smoothing: 0, brightness: 0, makeup: MakeupAmounts(lashes: 1))
+        XCTAssertLessThan(result[0], 128)
+    }
+
+    func testEyeshadowKeepsTheBrightnessAndShiftsTheHue() {
+        let blue = MakeupAmounts(eyeshadow: 1, eyeshadowColor: MakeupTint(r: 40, g: 60, b: 200))
+        let result = eyeLayer(eyeshadow: 255).blended(smoothing: 0, brightness: 0, makeup: blue)
+        XCTAssertGreaterThan(result[2], result[0])
+        let luma = 0.299 * Double(result[0]) + 0.587 * Double(result[1]) + 0.114 * Double(result[2])
+        XCTAssertEqual(luma, 128, accuracy: 12)
+    }
+
+    func testLensChangesTheIrisColor() {
+        let blue = MakeupAmounts(lens: 1, lensColor: MakeupTint(r: 60, g: 110, b: 190))
+        let result = eyeLayer(iris: 255).blended(smoothing: 0, brightness: 0, makeup: blue)
+        XCTAssertGreaterThan(result[2], result[0])
+    }
+
+    func testTearBagsBrighten() {
+        let result = eyeLayer(tearBags: 255).blended(smoothing: 0, brightness: 0, makeup: MakeupAmounts(tearBags: 1))
+        XCTAssertGreaterThan(result[0], 128)
+    }
+
+    func testEyeMakeupDoesNothingAtZero() {
+        let result = eyeLayer(eyeliner: 255, lashes: 255, eyeshadow: 255, iris: 255, tearBags: 255)
+            .blended(smoothing: 0, brightness: 0, makeup: MakeupAmounts())
+        XCTAssertEqual(Array(result.prefix(3)), [128, 128, 128])
+    }
+
     // MARK: 鼻筋
 
     func testNoseBridgeMaskFollowsTheCrestLine() {
