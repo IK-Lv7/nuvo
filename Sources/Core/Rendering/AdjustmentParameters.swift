@@ -93,6 +93,8 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
     public var cropCenter = CGPoint(x: 0.5, y: 0.5)
 
     public var texts: [TextOverlay] = []
+    /// スタンプ(SF Symbols)。nil(または空)は「なし」。
+    public var stamps: [StampOverlay]?
 
     /// 加工の対象から外した顔の番号(検出順)。nil は全員が対象。
     /// 保存済みのルックにこの項目が無くても読めるよう、空配列ではなく nil を「全員」とする。
@@ -150,7 +152,7 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
         min(max(value, range.lowerBound), range.upperBound)
     }
 
-    /// 「ルック」として保存・適用する範囲。写真ごとの内容(修復の位置・構図・文字・証明写真・加工する人・切り抜きの直し)は含めない。
+    /// 「ルック」として保存・適用する範囲。写真ごとの内容(修復の位置・構図・文字・スタンプ・証明写真・加工する人・切り抜きの直し)は含めない。
     public func lookOnly() -> AdjustmentParameters {
         var look = self
         look.spots = []
@@ -164,10 +166,11 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
         look.idPhoto = nil
         look.unselectedFaces = nil
         look.maskStrokes = nil
+        look.stamps = nil
         return look
     }
 
-    /// ルックを当てる。写真ごとの内容(修復の位置・構図・文字・証明写真・切り抜きの直し)は、今の写真のものを保つ。
+    /// ルックを当てる。写真ごとの内容(修復の位置・構図・文字・スタンプ・証明写真・切り抜きの直し)は、今の写真のものを保つ。
     public func applyingLook(_ look: AdjustmentParameters) -> AdjustmentParameters {
         var result = look.lookOnly()
         result.spots = spots
@@ -181,6 +184,7 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
         result.idPhoto = idPhoto
         result.unselectedFaces = unselectedFaces
         result.maskStrokes = maskStrokes
+        result.stamps = stamps
         return result
     }
 }

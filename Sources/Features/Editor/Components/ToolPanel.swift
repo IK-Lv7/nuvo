@@ -30,6 +30,8 @@ struct ToolPanel: View {
             aspectPanel
         case .text:
             TextToolPanel(viewModel: viewModel)
+        case .stamp:
+            StampToolPanel(viewModel: viewModel)
         case .looks:
             LooksPanel(viewModel: viewModel, store: lookStore)
         case .people:

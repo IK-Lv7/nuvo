@@ -51,7 +51,7 @@ Lipstick, blush, brows, and teeth whitening that stay put on your face and keep 
 Blur or replace the background. Portrait Mode photos use their built-in depth data for a more natural blur. If the automatic cutout misses a spot, fix it with an adjustable pen: paint to add or erase from the person. Make an ID photo with one tap: 35 × 45 mm (passport / My Number card) or 30 × 40 mm (résumé).\*
 
 **Composition, text, and filters**
-Crop, rotate, straighten, and zoom in. Add text in a range of typefaces. Choose from 18 filters, then add film grain or a soft light leak.
+Crop, rotate, straighten, and zoom in. Add text in a range of typefaces, or a stamp (Apple's own icon set — no bundled artwork). Choose from 18 filters, then add film grain or a soft light leak.
 
 **Make it yours**
 Save your favorite settings as a *Look* and apply it to any photo — or to many photos at once.

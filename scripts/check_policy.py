@@ -32,6 +32,9 @@ ALLOWED_IMPORTS = {
     "Foundation", "SwiftUI", "UIKit", "Observation", "Combine", "os",
     "CoreGraphics", "CoreImage", "CoreImage.CIFilterBuiltins", "CoreText", "CoreVideo", "ImageIO",
     "Vision", "Photos", "PhotosUI", "AVFoundation", "Metal", "MetalKit", "Accelerate",
+    # AppKit は配布物には入らない。NuvoCore は macOS でも `swift test` できるよう macOS もターゲットにしており
+    # (Package.swift)、SF Symbols の取得など、UIKit の代わりに `#if canImport(AppKit)` で使う箇所がある。
+    "AppKit",
     "NuvoCore",
 }
 # 第7章: 必要最小限の権限だけを要求する。フェーズ2(カメラ)を見越してカメラは許可する。

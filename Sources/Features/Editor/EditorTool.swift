@@ -17,6 +17,7 @@ enum EditorToolKind {
     case lipstick
     case cutout
     case highResolution
+    case stamp
 }
 
 struct EditorTool: Identifiable {
@@ -33,6 +34,7 @@ struct EditorTool: Identifiable {
         case .looks: 140
         case .lipstick: 176
         case .cutout: 176
+        case .stamp: 220
         default: 108
         }
     }
@@ -55,6 +57,7 @@ struct EditorTool: Identifiable {
         case .lipstick: p.lipstick != 0 || p.lipstickColor != nil
         case .cutout: p.maskStrokes?.isEmpty == false
         case .highResolution: p.highResolution == true
+        case .stamp: !(p.stamps ?? []).isEmpty
         }
     }
 }
@@ -112,6 +115,9 @@ enum EditorCatalog {
         ]),
         ToolCategory(id: "text", icon: "textformat", tools: [
             EditorTool(id: "text", icon: "textformat", kind: .text),
+        ]),
+        ToolCategory(id: "stamp", icon: "party.popper.fill", tools: [
+            EditorTool(id: "stamp", icon: "party.popper.fill", kind: .stamp),
         ]),
         ToolCategory(id: "filter", icon: "camera.filters", tools: [
             EditorTool(id: "filter", icon: "camera.filters", kind: .filters),

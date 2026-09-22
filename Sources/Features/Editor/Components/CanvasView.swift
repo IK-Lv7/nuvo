@@ -7,6 +7,7 @@ struct CanvasView: View {
     let viewModel: EditorViewModel
     let isHealing: Bool
     let isEditingText: Bool
+    let isEditingStamp: Bool
     /// ズームの範囲を動かしている間(構図のズームを選択中で、1 倍より大きい)。
     let isMovingCrop: Bool
     /// 「加工する人」を選んでいる間。顔に目印を出し、タップで入り切り、指で囲んで選べる。
@@ -47,7 +48,7 @@ struct CanvasView: View {
             .clipped()
             .gesture(zoomGesture(in: proxy.size))
             .simultaneousGesture(panGesture(in: proxy.size))
-            .onTapGesture(count: 2) { if !isHealing && !isEditingText && !isMovingCrop && !isSelectingPeople && !isFixingCutout { resetZoom() } }
+            .onTapGesture(count: 2) { if !isHealing && !isEditingText && !isEditingStamp && !isMovingCrop && !isSelectingPeople && !isFixingCutout { resetZoom() } }
             .onLongPressGesture(minimumDuration: 0.3, perform: {}, onPressingChanged: { pressing in
                 viewModel.isComparing = pressing
             })
@@ -76,7 +77,7 @@ struct CanvasView: View {
     private func panGesture(in size: CGSize) -> some Gesture {
         DragGesture()
             .onChanged { value in
-                guard scale > 1, !isEditingText, !isHealing, !isMovingCrop, !isSelectingPeople, !isFixingCutout else { return }
+                guard scale > 1, !isEditingText, !isEditingStamp, !isHealing, !isMovingCrop, !isSelectingPeople, !isFixingCutout else { return }
                 offset = clamped(CGSize(width: baseOffset.width + value.translation.width,
                                         height: baseOffset.height + value.translation.height), in: size)
             }
@@ -142,6 +143,15 @@ struct CanvasView: View {
                     .gesture(
                         DragGesture(minimumDistance: 0)
                             .onChanged { viewModel.moveSelectedText(to: unit($0.location, in: geometry.size)) }
+                            .onEnded { _ in viewModel.commitEdit() })
+            }
+        } else if isEditingStamp {
+            GeometryReader { geometry in
+                Color.clear
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { viewModel.moveSelectedStamp(to: unit($0.location, in: geometry.size)) }
                             .onEnded { _ in viewModel.commitEdit() })
             }
         }

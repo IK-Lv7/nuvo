@@ -33,7 +33,7 @@ enum TextRenderer {
 
         let font = makeFont(overlay, size: fontSize)
         let lines = overlay.text.components(separatedBy: "\n").map { line -> (CTLine, CGFloat) in
-            let attributes: [CFString: Any] = [kCTFontAttributeName: font, kCTForegroundColorAttributeName: cgColor(overlay.color)]
+            let attributes: [CFString: Any] = [kCTFontAttributeName: font, kCTForegroundColorAttributeName: overlay.color.cgColor]
             let attributed = CFAttributedStringCreate(nil, line as CFString, attributes as CFDictionary)
             let ctLine = CTLineCreateWithAttributedString(attributed ?? NSAttributedString(string: line) as CFAttributedString)
             return (ctLine, CGFloat(CTLineGetTypographicBounds(ctLine, nil, nil, nil)))
@@ -81,14 +81,5 @@ enum TextRenderer {
         let base = CTFontCreateUIFontForLanguage(.system, size, nil) ?? CTFontCreateWithName("Helvetica" as CFString, size, nil)
         guard bold else { return base }
         return CTFontCreateCopyWithSymbolicTraits(base, size, nil, .traitBold, .traitBold) ?? base
-    }
-
-    private static func cgColor(_ color: TextColor) -> CGColor {
-        switch color {
-        case .white: CGColor(red: 1, green: 1, blue: 1, alpha: 1)
-        case .black: CGColor(red: 0, green: 0, blue: 0, alpha: 1)
-        case .pink: CGColor(red: 1, green: 0.54, blue: 0.62, alpha: 1)
-        case .yellow: CGColor(red: 1, green: 0.86, blue: 0.3, alpha: 1)
-        }
     }
 }

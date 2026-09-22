@@ -39,6 +39,12 @@ struct EditorView: View {
         return false
     }
 
+    /// スタンプの編集中は、写真の上のドラッグでスタンプを動かす。
+    private var isEditingStamp: Bool {
+        if case .stamp = tool.kind { return viewModel.selectedStamp != nil }
+        return false
+    }
+
     /// 構図のズームを選んでいて、1 倍より大きいとき、写真の上のドラッグで切り出す範囲を動かす。
     private var isMovingCrop: Bool {
         tool.id == "cropZoom" && viewModel.parameters.cropZoom > 1
@@ -82,7 +88,7 @@ struct EditorView: View {
     private var editor: some View {
         VStack(spacing: 0) {
             EditorTopBar(viewModel: viewModel, pickerItem: $pickerItem, onSettings: { showsSettings = true })
-            CanvasView(viewModel: viewModel, isHealing: isHealing, isEditingText: isEditingText,
+            CanvasView(viewModel: viewModel, isHealing: isHealing, isEditingText: isEditingText, isEditingStamp: isEditingStamp,
                        isMovingCrop: isMovingCrop, isSelectingPeople: isSelectingPeople,
                        isFixingCutout: isFixingCutout, cutoutMode: cutoutMode, cutoutBrushRadius: cutoutBrushRadius,
                        showsHint: showsHint)

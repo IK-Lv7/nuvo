@@ -44,6 +44,7 @@ final class EditorViewModel {
     /// 自動検出した切り抜きを、薄いピンクで示す下地の画像。「切り抜きを直す」ペンで使う。
     private(set) var maskOverlayImage: CGImage?
     private(set) var selectedTextID: UUID?
+    private(set) var selectedStampID: UUID?
     private(set) var batchProgress: BatchProgress?
     private(set) var lastBatch: BatchSummary?
     private(set) var shareItem: ShareItem?
@@ -88,6 +89,7 @@ final class EditorViewModel {
         history = UndoHistory(initial: AdjustmentParameters())
         parameters = AdjustmentParameters()
         selectedTextID = nil
+        selectedStampID = nil
         saveResult = nil
         hasSubjectMask = false
         hasDepthMask = false

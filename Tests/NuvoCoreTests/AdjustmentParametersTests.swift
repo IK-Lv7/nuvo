@@ -211,6 +211,38 @@ final class LookTests: XCTestCase {
         XCTAssertFalse(p.isIdentity)
     }
 
+    func testStampsRoundTripThroughJSON() throws {
+        var p = AdjustmentParameters()
+        p.stamps = [StampOverlay(symbolName: "heart.fill", center: CGPoint(x: 0.3, y: 0.4), size: 0.2, color: .pink)]
+        let decoded = try JSONDecoder().decode(AdjustmentParameters.self, from: JSONEncoder().encode(p))
+        XCTAssertEqual(decoded.stamps, p.stamps)
+    }
+
+    func testSavedLooksWithoutStampsStillDecode() throws {
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(
+            with: JSONEncoder().encode(AdjustmentParameters())) as? [String: Any])
+        object.removeValue(forKey: "stamps")
+        let data = try JSONSerialization.data(withJSONObject: object)
+        XCTAssertNoThrow(try JSONDecoder().decode(AdjustmentParameters.self, from: data))
+    }
+
+    func testAddingAStampBreaksIdentity() {
+        var p = AdjustmentParameters()
+        p.stamps = [StampOverlay(symbolName: "star.fill")]
+        XCTAssertFalse(p.isIdentity)
+    }
+
+    func testLookDoesNotCarryStampsButApplyingItKeepsThisPhotosOwn() {
+        var current = AdjustmentParameters()
+        current.stamps = [StampOverlay(symbolName: "star.fill")]
+        XCTAssertNil(current.lookOnly().stamps)
+
+        var look = AdjustmentParameters()
+        look.skinSmoothing = 0.5
+        let applied = current.applyingLook(look)
+        XCTAssertEqual(applied.stamps, current.stamps)
+    }
+
     func testParametersRoundTripThroughJSON() throws {
         let original = customized()
         let decoded = try JSONDecoder().decode(AdjustmentParameters.self, from: JSONEncoder().encode(original))

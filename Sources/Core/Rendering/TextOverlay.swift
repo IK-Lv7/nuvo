@@ -34,6 +34,16 @@ public enum TextStyle: String, CaseIterable, Sendable, Codable {
 
 public enum TextColor: String, CaseIterable, Sendable, Codable {
     case white, black, pink, yellow
+
+    /// 文字入れ・スタンプで共通に使う色の値。
+    public var cgColor: CGColor {
+        switch self {
+        case .white: CGColor(red: 1, green: 1, blue: 1, alpha: 1)
+        case .black: CGColor(red: 0, green: 0, blue: 0, alpha: 1)
+        case .pink: CGColor(red: 1, green: 0.54, blue: 0.62, alpha: 1)
+        case .yellow: CGColor(red: 1, green: 0.86, blue: 0.3, alpha: 1)
+        }
+    }
 }
 
 /// 写真に重ねる文字。位置・大きさは画像サイズに依存しない値で持つので、プレビューでも書き出しでも同じ見た目になる。
