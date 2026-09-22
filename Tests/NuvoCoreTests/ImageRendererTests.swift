@@ -123,6 +123,49 @@ final class BackgroundAndToneTests: XCTestCase {
         XCTAssertEqual(pixel(data, x: 6, y: 4)[1], 0, accuracy: 8)
     }
 
+    /// 左半分が人物(白)、右半分が背景(黒)の、大きめのマスクと画像(ペンの半径を確かめやすくするため)。
+    private func wideLeftHalfMask(width: Int = 200, height: Int = 100) throws -> SubjectMask {
+        let white = CIImage(color: .white).cropped(to: CGRect(x: 0, y: 0, width: width / 2, height: height))
+        let black = CIImage(color: .black).cropped(to: CGRect(x: 0, y: 0, width: width, height: height))
+        return try XCTUnwrap(SubjectMask(image: white.composited(over: black), context: CIContext()))
+    }
+
+    private func widePixels(_ parameters: AdjustmentParameters, mask: SubjectMask,
+                            width: Int = 200, height: Int = 100) throws -> [UInt8] {
+        let source = CIImage(color: CIColor(red: 1, green: 0, blue: 0)).cropped(to: CGRect(x: 0, y: 0, width: width, height: height))
+        let rendered = renderer.makeSource(image: source, subjectMask: mask)
+        let cgImage = try XCTUnwrap(renderer.render(rendered, parameters: parameters))
+        return try XCTUnwrap(BitmapIO.rgba(from: cgImage))
+    }
+
+    private func widePixel(_ data: [UInt8], x: Int, y: Int, width: Int = 200) -> [Int] {
+        let i = (y * width + x) * 4
+        return [Int(data[i]), Int(data[i + 1]), Int(data[i + 2])]
+    }
+
+    func testEraseStrokeExtendsTheBackgroundIntoTheSubjectSide() throws {
+        // マスクは左半分(x < 100)が人物。人物側の内側 (70, 50) を「消す」ペンで背景に変える。
+        var p = AdjustmentParameters()
+        p.backgroundColor = .white
+        p.maskStrokes = [MaskStroke(points: [CGPoint(x: 0.35, y: 0.5)], radius: 0.15, mode: .erase)]
+        let data = try widePixels(p, mask: try wideLeftHalfMask())
+        // もともと人物側だった場所が、消したことで背景色(白)になる。
+        XCTAssertEqual(widePixel(data, x: 70, y: 50)[1], 255, accuracy: 8)
+        // 遠く離れた人物側は、消しゴムの外なので影響を受けない(赤いまま)。
+        XCTAssertEqual(widePixel(data, x: 5, y: 50)[0], 255, accuracy: 8)
+        XCTAssertEqual(widePixel(data, x: 5, y: 50)[1], 0, accuracy: 8)
+    }
+
+    func testKeepStrokeProtectsPartOfTheBackgroundSide() throws {
+        // マスクは右半分(x >= 100)が背景。背景側の内側 (130, 50) を「足す」ペンで人物として残す。
+        var p = AdjustmentParameters()
+        p.backgroundColor = .white
+        p.maskStrokes = [MaskStroke(points: [CGPoint(x: 0.65, y: 0.5)], radius: 0.15, mode: .keep)]
+        let data = try widePixels(p, mask: try wideLeftHalfMask())
+        XCTAssertEqual(widePixel(data, x: 130, y: 50)[0], 255, accuracy: 8)
+        XCTAssertEqual(widePixel(data, x: 130, y: 50)[1], 0, accuracy: 8)
+    }
+
     func testSubjectMaskFindsTheTopEdge() throws {
         // 白い矩形が下から 7 行分 → 上から 3 行目(0.3)で人物が始まる。
         let white = CIImage(color: .white).cropped(to: CGRect(x: 0, y: 0, width: 10, height: 7))

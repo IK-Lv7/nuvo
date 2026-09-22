@@ -41,6 +41,8 @@ final class EditorViewModel {
     private(set) var hasDepthMask = false
     /// 検出した顔。複数人のとき、加工する人を選ぶ画面の目印に使う。
     private(set) var detectedFaces: [FaceLandmarks] = []
+    /// 自動検出した切り抜きを、薄いピンクで示す下地の画像。「切り抜きを直す」ペンで使う。
+    private(set) var maskOverlayImage: CGImage?
     private(set) var selectedTextID: UUID?
     private(set) var batchProgress: BatchProgress?
     private(set) var lastBatch: BatchSummary?
@@ -79,6 +81,7 @@ final class EditorViewModel {
         fullImage = image
         analysis = nil
         detectedFaces = []
+        maskOverlayImage = nil
         sourceMetadata = renderer.readMetadata(from: data)
         previewSource = renderer.makeSource(image: preview)
         originalPreview = renderer.cgImage(from: preview)
@@ -123,6 +126,18 @@ final class EditorViewModel {
 
     func setFilter(_ preset: FilterPreset?) {
         update { $0.filter = preset }
+    }
+
+    /// 履歴に積まず、パラメータの一部を書き換える(ドラッグ中など、まだ確定していない変更用)。
+    /// `moveCrop` などと同じ考え方を、他のファイル(EditorViewModel+*.swift)からも使えるようにする。
+    func mutateWithoutCommitting(_ change: (inout AdjustmentParameters) -> Void) {
+        change(&parameters)
+        scheduleRender()
+    }
+
+    /// リップの色を選ぶ。nil を渡すと既定の色に戻る。
+    func setLipstickColor(_ tint: MakeupTint?) {
+        update { $0.lipstickColor = tint }
     }
 
     /// 証明写真を選ぶ。背景が無地でなければ、規格で一般的な白にする。
@@ -331,17 +346,20 @@ final class EditorViewModel {
 
     private func analyze(preview: CIImage, data: Data) async {
         let renderer = renderer
-        let result = await Task.detached(priority: .userInitiated) { () -> (PhotoAnalysis, RenderSource) in
+        let result = await Task.detached(priority: .userInitiated) { () -> (PhotoAnalysis, RenderSource, CGImage?) in
             let analysis = PhotoAnalyzer.analyze(preview: preview, data: data, renderer: renderer)
             let source = renderer.makeSource(image: preview, faces: analysis.faces,
                                              subjectMask: analysis.subjectMask, depthMask: analysis.depthMask)
-            return (analysis, source)
+            // 「切り抜きを直す」ペンの下地(薄いピンク)。写真ごとに1回だけ作れば足りる。
+            let overlay = analysis.subjectMask.flatMap { renderer.cgImage(from: MaskOverlay.tinted($0)) }
+            return (analysis, source, overlay)
         }.value
         guard !Task.isCancelled else { return }
         analysis = result.0
         detectedFaces = result.0.faces
         hasSubjectMask = result.0.subjectMask != nil
         hasDepthMask = result.0.depthMask != nil
+        maskOverlayImage = result.2
         previewSource = result.1
         scheduleRender()
         refreshIDPhotoAvailability()

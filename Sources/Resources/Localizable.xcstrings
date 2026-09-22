@@ -353,6 +353,102 @@
         }
       }
     },
+    "cutout.blockedByComposition": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fixing the cutout is unavailable while the crop or rotation is changed. Fix it first."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切り抜きや回転を変えている間は、切り抜きを直せません。先に直してください。"
+          }
+        }
+      }
+    },
+    "cutout.erase": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erase"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "消す"
+          }
+        }
+      }
+    },
+    "cutout.hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag to paint. Keep adds to the person, erase adds to the background."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ドラッグで描きます。「足す」は人物側に、「消す」は背景側にします。"
+          }
+        }
+      }
+    },
+    "cutout.keep": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "足す"
+          }
+        }
+      }
+    },
+    "cutout.noSubject": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No person was found in this photo, so the cutout can't be fixed."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この写真では人物が見つからなかったため、切り抜きを直せません。"
+          }
+        }
+      }
+    },
+    "cutout.reset": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自動に戻す"
+          }
+        }
+      }
+    },
     "editor.addText": {
       "localizations": {
         "en": {
@@ -1921,6 +2017,102 @@
         }
       }
     },
+    "lipstick.berry": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berry"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ベリー"
+          }
+        }
+      }
+    },
+    "lipstick.brick": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brick"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ブリック"
+          }
+        }
+      }
+    },
+    "lipstick.coral": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coral"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コーラル"
+          }
+        }
+      }
+    },
+    "lipstick.nude": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nude"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ヌード"
+          }
+        }
+      }
+    },
+    "lipstick.plum": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plum"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プラム"
+          }
+        }
+      }
+    },
+    "lipstick.rose": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rose"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ローズ"
+          }
+        }
+      }
+    },
     "people.all": {
       "localizations": {
         "en": {
@@ -2589,6 +2781,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "背景色"
+          }
+        }
+      }
+    },
+    "tool.backgroundCutout": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fix cutout"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切り抜きを直す"
           }
         }
       }

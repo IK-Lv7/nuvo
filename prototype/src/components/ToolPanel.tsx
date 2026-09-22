@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { Alert, Pressable } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
-import { backgroundColors, cropOptions, filterOptions, idPhotoOptions, sliderDefault, type Tool } from '../catalog';
+import { backgroundColors, cropOptions, filterOptions, idPhotoOptions, lipstickPresets, sliderDefault, type Tool } from '../catalog';
 import { hasComposition, type Params, type TextItem } from '../state';
 import { mockFaces, selectedFaces } from '../people';
 import { TextPanel } from './TextPanel';
@@ -136,6 +136,28 @@ export function ToolPanel(props: Props) {
         </View>
       );
     }
+    case 'lipstick': {
+      const value = params.values[tool.id] ?? sliderDefault({ min: 0, max: 1 });
+      const percent = Math.round(value * 100);
+      return (
+        <View style={styles.box}>
+          <View style={styles.row}>
+            {lipstickPresets.map((preset) => (
+              <Pressable key={preset.id} onPress={() => onCommit((p) => ({ ...p, lipstickColor: preset.id === 'rose' ? null : preset.color }))}>
+                <View style={[styles.swatch, {
+                  backgroundColor: preset.color,
+                  borderColor: (params.lipstickColor ?? '#BE3C4B') === preset.color ? theme.accent : 'rgba(255,255,255,0.3)',
+                  borderWidth: (params.lipstickColor ?? '#BE3C4B') === preset.color ? 3 : 1,
+                }]} />
+              </Pressable>
+            ))}
+          </View>
+          <Text style={styles.value} onPress={() => onCommit((p) => ({ ...p, values: { ...p.values, [tool.id]: 0 } }))}>{`${percent}%`}</Text>
+          <TrackSlider value={value} min={0} max={1}
+            onChange={(v) => onChange((p) => ({ ...p, values: { ...p.values, [tool.id]: v } }))} onEnd={() => onCommit()} />
+        </View>
+      );
+    }
     case 'people': {
       const blocked = hasComposition(params);
       return (
@@ -170,4 +192,5 @@ const styles = StyleSheet.create({
   summary: { color: theme.text, fontSize: 15, fontWeight: '600', alignSelf: 'center', fontVariant: ['tabular-nums'] },
   hint: { color: theme.textSecondary, fontSize: 13 },
   warn: { color: '#ff9f0a', fontSize: 13 },
+  swatch: { width: 36, height: 36, borderRadius: 18 },
 });

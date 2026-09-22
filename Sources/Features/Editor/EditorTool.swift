@@ -14,6 +14,8 @@ enum EditorToolKind {
     case text
     case looks
     case people
+    case lipstick
+    case cutout
 }
 
 struct EditorTool: Identifiable {
@@ -28,6 +30,8 @@ struct EditorTool: Identifiable {
         switch kind {
         case .text: 252
         case .looks: 140
+        case .lipstick: 176
+        case .cutout: 176
         default: 108
         }
     }
@@ -47,6 +51,8 @@ struct EditorTool: Identifiable {
         case .text: !p.texts.isEmpty
         case .looks: false
         case .people: !p.excludedFaces.isEmpty
+        case .lipstick: p.lipstick != 0 || p.lipstickColor != nil
+        case .cutout: p.maskStrokes?.isEmpty == false
         }
     }
 }
@@ -85,7 +91,7 @@ enum EditorCatalog {
             EditorTool(id: "noseBridge", icon: "highlighter", kind: .slider(\.noseBridge, intensity)),
         ]),
         ToolCategory(id: "makeup", icon: "paintbrush.pointed", tools: [
-            EditorTool(id: "lipstick", icon: "mouth", kind: .slider(\.lipstick, intensity)),
+            EditorTool(id: "lipstick", icon: "mouth", kind: .lipstick),
             EditorTool(id: "blush", icon: "circle.dotted", kind: .slider(\.blush, intensity)),
             EditorTool(id: "eyebrow", icon: "eyebrow", kind: .slider(\.eyebrow, intensity)),
             EditorTool(id: "teethWhitening", icon: "sparkle", kind: .slider(\.teethWhitening, intensity)),
@@ -93,6 +99,7 @@ enum EditorCatalog {
         ToolCategory(id: "background", icon: "person.and.background.dotted", tools: [
             EditorTool(id: "backgroundBlur", icon: "aperture", kind: .slider(\.backgroundBlur, intensity)),
             EditorTool(id: "backgroundColor", icon: "paintpalette", kind: .backgroundColor),
+            EditorTool(id: "backgroundCutout", icon: "paintbrush.pointed.fill", kind: .cutout),
             EditorTool(id: "idPhoto", icon: "person.text.rectangle", kind: .idPhoto),
         ]),
         ToolCategory(id: "crop", icon: "crop", tools: [

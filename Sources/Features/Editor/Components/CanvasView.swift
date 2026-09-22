@@ -1,3 +1,4 @@
+import NuvoCore
 import SwiftUI
 
 /// 写真の表示領域。ピンチで拡大、ドラッグで移動、ダブルタップで元の大きさに戻る。
@@ -10,6 +11,10 @@ struct CanvasView: View {
     let isMovingCrop: Bool
     /// 「加工する人」を選んでいる間。顔に目印を出し、タップで入り切り、指で囲んで選べる。
     var isSelectingPeople = false
+    /// 「切り抜きを直す」ペンを使っている間。
+    var isFixingCutout = false
+    var cutoutMode: MaskStroke.Mode = .keep
+    var cutoutBrushRadius: Double = 0.05
     let showsHint: Bool
 
     @State private var scale: CGFloat = 1
@@ -42,7 +47,7 @@ struct CanvasView: View {
             .clipped()
             .gesture(zoomGesture(in: proxy.size))
             .simultaneousGesture(panGesture(in: proxy.size))
-            .onTapGesture(count: 2) { if !isHealing && !isEditingText && !isMovingCrop && !isSelectingPeople { resetZoom() } }
+            .onTapGesture(count: 2) { if !isHealing && !isEditingText && !isMovingCrop && !isSelectingPeople && !isFixingCutout { resetZoom() } }
             .onLongPressGesture(minimumDuration: 0.3, perform: {}, onPressingChanged: { pressing in
                 viewModel.isComparing = pressing
             })
@@ -71,7 +76,7 @@ struct CanvasView: View {
     private func panGesture(in size: CGSize) -> some Gesture {
         DragGesture()
             .onChanged { value in
-                guard scale > 1, !isEditingText, !isHealing, !isMovingCrop, !isSelectingPeople else { return }
+                guard scale > 1, !isEditingText, !isHealing, !isMovingCrop, !isSelectingPeople, !isFixingCutout else { return }
                 offset = clamped(CGSize(width: baseOffset.width + value.translation.width,
                                         height: baseOffset.height + value.translation.height), in: size)
             }
@@ -128,6 +133,8 @@ struct CanvasView: View {
             }
         } else if isSelectingPeople {
             PeopleOverlay(viewModel: viewModel)
+        } else if isFixingCutout {
+            MaskFixOverlay(viewModel: viewModel, mode: cutoutMode, radius: cutoutBrushRadius)
         } else if isEditingText {
             GeometryReader { geometry in
                 Color.clear

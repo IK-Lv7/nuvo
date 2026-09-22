@@ -46,8 +46,8 @@ final class SkinRetouch: @unchecked Sendable {
     }
 
     func apply(_ p: AdjustmentParameters, to image: CIImage) -> CIImage {
-        let makeup = MakeupAmounts(lips: p.lipstick, blush: p.blush, brows: p.eyebrow,
-                                   teeth: p.teethWhitening, darkCircles: p.darkCircles, noseBridge: p.noseBridge)
+        let makeup = MakeupAmounts(lips: p.lipstick, lipColor: p.lipstickColor ?? LipstickPreset.rose.tint, blush: p.blush,
+                                   brows: p.eyebrow, teeth: p.teethWhitening, darkCircles: p.darkCircles, noseBridge: p.noseBridge)
         var result = image
         let excluded = Set(p.excludedFaces)
         for layer in layers where !excluded.contains(layer.faceIndex) {

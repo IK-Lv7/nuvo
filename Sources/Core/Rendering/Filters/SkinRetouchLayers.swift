@@ -4,6 +4,7 @@ import Foundation
 /// メイク・部分補正の強さ(0...1)。
 struct MakeupAmounts: Equatable, Sendable {
     var lips = 0.0
+    var lipColor = LipstickPreset.rose.tint
     var blush = 0.0
     var brows = 0.0
     var teeth = 0.0
@@ -25,7 +26,7 @@ final class SkinRetouchLayers: @unchecked Sendable {
 
     // メインの色と上限。いずれも自作の初期値で、実機で見て調整する前提。
     // 上限は「塗った感」が出る手前で止める。元の質感(唇のしわ、眉の毛流れ)は輝度として残す。
-    private static let lipColor: (Float, Float, Float) = (190, 60, 75)
+    // リップの色は選べるため、ここには持たない(MakeupAmounts.lipColor)。
     private static let blushColor: (Float, Float, Float) = (235, 110, 120)
     private static let browColor: (Float, Float, Float) = (70, 50, 42)
     private static let lipCap: Float = 0.75
@@ -107,7 +108,7 @@ final class SkinRetouchLayers: @unchecked Sendable {
             }
             // 肌の補正のあとに乗せる。チーク → リップ → 眉の順(重なりは眉が最後に勝つ)。
             rgb = Self.colorize(rgb, target: Self.blushColor, amount: blushMask * blushAmount)
-            rgb = Self.colorize(rgb, target: Self.lipColor, amount: lipMask * lipAmount)
+            rgb = Self.colorize(rgb, target: makeup.lipColor.rgb255, amount: lipMask * lipAmount)
             rgb = Self.colorize(rgb, target: Self.browColor, amount: browMask * browAmount)
             rgb = Self.whiten(rgb, amount: teethMask * teethAmount)
             rgb = Self.lift(rgb, amount: noseMask * noseAmount * Self.noseBridgeLift)

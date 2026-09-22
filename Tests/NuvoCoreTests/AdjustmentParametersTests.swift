@@ -130,6 +130,66 @@ final class LookTests: XCTestCase {
         XCTAssertNil(result.cropAspect)
     }
 
+    func testLipstickColorRoundTripsThroughJSON() throws {
+        var p = AdjustmentParameters()
+        p.lipstickColor = LipstickPreset.coral.tint
+        let decoded = try JSONDecoder().decode(AdjustmentParameters.self, from: JSONEncoder().encode(p))
+        XCTAssertEqual(decoded.lipstickColor, LipstickPreset.coral.tint)
+    }
+
+    func testSavedLooksWithoutALipstickColorStillDecode() throws {
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(
+            with: JSONEncoder().encode(AdjustmentParameters())) as? [String: Any])
+        object.removeValue(forKey: "lipstickColor")
+        let data = try JSONSerialization.data(withJSONObject: object)
+        XCTAssertNoThrow(try JSONDecoder().decode(AdjustmentParameters.self, from: data))
+    }
+
+    func testChoosingALipstickColorBreaksIdentity() {
+        var p = AdjustmentParameters()
+        p.lipstickColor = LipstickPreset.berry.tint
+        XCTAssertFalse(p.isIdentity)
+    }
+
+    func testLookKeepsTheChosenLipstickColor() {
+        var p = AdjustmentParameters()
+        p.lipstick = 0.5
+        p.lipstickColor = LipstickPreset.plum.tint
+        XCTAssertEqual(p.lookOnly().lipstickColor, LipstickPreset.plum.tint)
+    }
+
+    func testMaskStrokesRoundTripThroughJSON() throws {
+        var p = AdjustmentParameters()
+        p.maskStrokes = [MaskStroke(points: [CGPoint(x: 0.3, y: 0.4)], radius: 0.05, mode: .erase)]
+        let decoded = try JSONDecoder().decode(AdjustmentParameters.self, from: JSONEncoder().encode(p))
+        XCTAssertEqual(decoded.maskStrokes, p.maskStrokes)
+    }
+
+    func testSavedLooksWithoutMaskStrokesStillDecode() throws {
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(
+            with: JSONEncoder().encode(AdjustmentParameters())) as? [String: Any])
+        object.removeValue(forKey: "maskStrokes")
+        let data = try JSONSerialization.data(withJSONObject: object)
+        XCTAssertNoThrow(try JSONDecoder().decode(AdjustmentParameters.self, from: data))
+    }
+
+    func testAddingAMaskStrokeBreaksIdentity() {
+        var p = AdjustmentParameters()
+        p.maskStrokes = [MaskStroke(points: [CGPoint(x: 0.5, y: 0.5)], radius: 0.05, mode: .keep)]
+        XCTAssertFalse(p.isIdentity)
+    }
+
+    func testLookDoesNotCarryMaskStrokesButApplyingItKeepsThisPhotosOwn() {
+        var current = AdjustmentParameters()
+        current.maskStrokes = [MaskStroke(points: [CGPoint(x: 0.5, y: 0.5)], radius: 0.05, mode: .keep)]
+        XCTAssertNil(current.lookOnly().maskStrokes)
+
+        var look = AdjustmentParameters()
+        look.skinSmoothing = 0.5
+        let applied = current.applyingLook(look)
+        XCTAssertEqual(applied.maskStrokes, current.maskStrokes)
+    }
+
     func testParametersRoundTripThroughJSON() throws {
         let original = customized()
         let decoded = try JSONDecoder().decode(AdjustmentParameters.self, from: JSONEncoder().encode(original))

@@ -29,6 +29,17 @@ public final class SubjectMask: @unchecked Sendable {
         self.gray = grayBytes
     }
 
+    /// ペンで描いた線を重ねた、新しいマスクを作る。線が無ければ自分自身を返す(無駄な複製をしない)。
+    /// 検出時と同じ格子(このマスクの解像度)に描き、プレビューでも書き出しでも同じ結果になるようにする。
+    func applyingStrokes(_ strokes: [MaskStroke]) -> SubjectMask {
+        guard !strokes.isEmpty else { return self }
+        var edited = gray
+        for stroke in strokes {
+            stroke.rasterize(into: &edited, width: width, height: height)
+        }
+        return SubjectMask(grayBytes: edited, width: width, height: height) ?? self
+    }
+
     /// 指定した横範囲(0...1)で、人物が最初に現れる行(0...1、上が 0)。
     /// 証明写真で、髪を含む頭頂の位置を実測するために使う。
     func topEdge(columns: ClosedRange<CGFloat>) -> CGFloat? {

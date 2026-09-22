@@ -6,6 +6,7 @@ type IconName = ComponentProps<typeof Ionicons>['name'];
 /** Sources/Features/Editor/EditorTool.swift の EditorCatalog に対応する。 */
 export type ToolKind =
   | { type: 'slider'; min: number; max: number }
+  | { type: 'lipstick' }
   | { type: 'filters' }
   | { type: 'backgroundColor' }
   | { type: 'idPhoto' }
@@ -23,6 +24,7 @@ export function panelHeight(tool: Tool): number {
   switch (tool.kind.type) {
     case 'text': return 252;
     case 'looks': return 140;
+    case 'lipstick': return 176;
     default: return 108;
   }
 }
@@ -53,7 +55,7 @@ export const categories: Category[] = [
     { id: 'noseBridge', title: '鼻筋', icon: 'trending-up-outline', kind: intensity },
   ] },
   { id: 'makeup', title: 'メイク', icon: 'brush-outline', tools: [
-    { id: 'lipstick', title: 'リップ', icon: 'heart-outline', kind: intensity },
+    { id: 'lipstick', title: 'リップ', icon: 'heart-outline', kind: { type: 'lipstick' } },
     { id: 'blush', title: 'チーク', icon: 'ellipse-outline', kind: intensity },
     { id: 'eyebrow', title: '眉', icon: 'remove-outline', kind: intensity },
     { id: 'teethWhitening', title: '歯', icon: 'sparkles-outline', kind: intensity },
@@ -93,6 +95,16 @@ export const categories: Category[] = [
   { id: 'look', title: 'ルック', icon: 'bookmark-outline', tools: [
     { id: 'looks', title: 'ルック', icon: 'bookmark-outline', kind: { type: 'looks' } },
   ] },
+];
+
+/** MakeupTint.swift の LipstickPreset と同じ 6 種。名前は色の系統を表す一般的な言葉。 */
+export const lipstickPresets = [
+  { id: 'nude', title: 'ヌード', color: '#C88C7D' },
+  { id: 'coral', title: 'コーラル', color: '#DE685C' },
+  { id: 'rose', title: 'ローズ', color: '#BE3C4B' },
+  { id: 'berry', title: 'ベリー', color: '#962D50' },
+  { id: 'brick', title: 'ブリック', color: '#AA4637' },
+  { id: 'plum', title: 'プラム', color: '#78375A' },
 ];
 
 /** LUTFilter.swift の FilterPreset と同じ 18 種。 */

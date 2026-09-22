@@ -26,6 +26,8 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
     public static let intensityRange: ClosedRange<Double> = 0...1
     /// 構図のズーム倍率。1 が全体、4 で縦横とも 1/4 の範囲を切り出す。
     public static let zoomRange: ClosedRange<Double> = 1...4
+    /// 「切り抜きを直す」ペンの、太さの調整範囲(画像の長辺に対する比)。
+    public static let maskBrushRadiusRange: ClosedRange<Double> = 0.01...0.12
 
     /// 肌。正で滑らかに、負で質感を強調する。
     public var skinSmoothing: Double = 0
@@ -43,6 +45,8 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
 
     /// メイクの濃さ(0...1)。
     public var lipstick: Double = 0
+    /// リップの色。nil は既定の色(LipstickPreset.rose と同じ)。
+    public var lipstickColor: MakeupTint?
     public var blush: Double = 0
     public var eyebrow: Double = 0
     public var teethWhitening: Double = 0
@@ -73,6 +77,8 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
     public var filterIntensity: Double = 1
 
     public var spots: [HealSpot] = []
+    /// 背景の切り抜きを、ペンで直した線。nil(または空)は自動検出のまま。
+    public var maskStrokes: [MaskStroke]?
 
     /// 構図。回転は時計回りに 90° の回数(0...3)、傾き補正は ±1 が ±30°。
     public var rotationQuarterTurns = 0
@@ -141,7 +147,7 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
         min(max(value, range.lowerBound), range.upperBound)
     }
 
-    /// 「ルック」として保存・適用する範囲。写真ごとの内容(修復の位置・構図・文字・証明写真・加工する人)は含めない。
+    /// 「ルック」として保存・適用する範囲。写真ごとの内容(修復の位置・構図・文字・証明写真・加工する人・切り抜きの直し)は含めない。
     public func lookOnly() -> AdjustmentParameters {
         var look = self
         look.spots = []
@@ -154,10 +160,11 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
         look.cropCenter = CGPoint(x: 0.5, y: 0.5)
         look.idPhoto = nil
         look.unselectedFaces = nil
+        look.maskStrokes = nil
         return look
     }
 
-    /// ルックを当てる。写真ごとの内容(修復の位置・構図・文字・証明写真)は、今の写真のものを保つ。
+    /// ルックを当てる。写真ごとの内容(修復の位置・構図・文字・証明写真・切り抜きの直し)は、今の写真のものを保つ。
     public func applyingLook(_ look: AdjustmentParameters) -> AdjustmentParameters {
         var result = look.lookOnly()
         result.spots = spots
@@ -170,6 +177,7 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
         result.cropCenter = cropCenter
         result.idPhoto = idPhoto
         result.unselectedFaces = unselectedFaces
+        result.maskStrokes = maskStrokes
         return result
     }
 }

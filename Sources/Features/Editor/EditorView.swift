@@ -9,6 +9,8 @@ struct EditorView: View {
     @State private var categoryID = EditorCatalog.categories[0].id
     @State private var toolID = EditorCatalog.categories[0].tools[0].id
     @State private var isHealing = false
+    @State private var cutoutMode: MaskStroke.Mode = .keep
+    @State private var cutoutBrushRadius: Double = 0.05
     @State private var showsHint = false
     @State private var showsSettings = false
     @State private var lookStore = LookStore()
@@ -40,6 +42,11 @@ struct EditorView: View {
     /// 構図のズームを選んでいて、1 倍より大きいとき、写真の上のドラッグで切り出す範囲を動かす。
     private var isMovingCrop: Bool {
         tool.id == "cropZoom" && viewModel.parameters.cropZoom > 1
+    }
+
+    /// 「切り抜きを直す」ペンを、写真の上で使っている状態。
+    private var isFixingCutout: Bool {
+        tool.id == "backgroundCutout" && viewModel.canFixCutout
     }
 
     var body: some View {
@@ -76,7 +83,9 @@ struct EditorView: View {
         VStack(spacing: 0) {
             EditorTopBar(viewModel: viewModel, pickerItem: $pickerItem, onSettings: { showsSettings = true })
             CanvasView(viewModel: viewModel, isHealing: isHealing, isEditingText: isEditingText,
-                       isMovingCrop: isMovingCrop, isSelectingPeople: isSelectingPeople, showsHint: showsHint)
+                       isMovingCrop: isMovingCrop, isSelectingPeople: isSelectingPeople,
+                       isFixingCutout: isFixingCutout, cutoutMode: cutoutMode, cutoutBrushRadius: cutoutBrushRadius,
+                       showsHint: showsHint)
                 .id(viewModel.imageRevision)
             controls
         }
@@ -107,7 +116,8 @@ struct EditorView: View {
     /// 選んだツールの操作部の高さはツールごとに固定し、ツールを切り替えても写真が上下に動かないようにする。
     private var controls: some View {
         VStack(spacing: 14) {
-            ToolPanel(tool: tool, viewModel: viewModel, lookStore: lookStore, isHealing: $isHealing)
+            ToolPanel(tool: tool, viewModel: viewModel, lookStore: lookStore, isHealing: $isHealing,
+                      cutoutMode: $cutoutMode, cutoutBrushRadius: $cutoutBrushRadius)
                 .frame(height: tool.panelHeight, alignment: .top)
                 .padding(.horizontal, Theme.Spacing.l)
             ToolStrip(tools: category.tools, selectedID: $toolID,

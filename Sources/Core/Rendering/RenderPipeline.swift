@@ -26,9 +26,12 @@ public struct RenderPipeline: Sendable {
         if let retouch = source.retouch, p.hasSkinOrMakeup {
             image = retouch.apply(p, to: image)
         }
-        if let color = p.backgroundColor, let mask = source.subjectMask {
+        // 「切り抜きを直す」ペンの線は、実際に使われるどちらのマスクにも同じように重ねる。
+        let cutoutStrokes = p.maskStrokes ?? []
+        if let color = p.backgroundColor, let mask = source.subjectMask?.applyingStrokes(cutoutStrokes) {
             image = BackgroundFilter.apply(blur: 0, color: color, mask: mask, to: image)
-        } else if p.backgroundBlur > 0, let mask = source.depthMask ?? source.subjectMask {
+        } else if p.backgroundBlur > 0,
+                  let mask = (source.depthMask ?? source.subjectMask)?.applyingStrokes(cutoutStrokes) {
             // ポートレート写真では、深度から作ったマスクのほうが奥行きに沿った自然なぼけ方になる。
             image = BackgroundFilter.apply(blur: p.backgroundBlur, color: nil, mask: mask, to: image)
         }

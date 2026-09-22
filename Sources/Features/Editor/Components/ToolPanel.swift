@@ -7,6 +7,8 @@ struct ToolPanel: View {
     let viewModel: EditorViewModel
     let lookStore: LookStore
     @Binding var isHealing: Bool
+    @Binding var cutoutMode: MaskStroke.Mode
+    @Binding var cutoutBrushRadius: Double
 
     var body: some View {
         switch tool.kind {
@@ -32,6 +34,10 @@ struct ToolPanel: View {
             LooksPanel(viewModel: viewModel, store: lookStore)
         case .people:
             peoplePanel
+        case .lipstick:
+            lipstickPanel
+        case .cutout:
+            cutoutPanel
         }
     }
 
@@ -126,6 +132,45 @@ struct ToolPanel: View {
                 Text(count == 0 ? LocalizedStringKey("editor.autoHealNone")
                                 : LocalizedStringKey("editor.autoHealDone \(count)"))
                     .font(.footnote).foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var lipstickPanel: some View {
+        let currentColor = viewModel.parameters.lipstickColor ?? LipstickPreset.rose.tint
+        return VStack(spacing: 8) {
+            LipstickColorRow(
+                selected: currentColor,
+                onSelectPreset: { viewModel.setLipstickColor($0) },
+                customBinding: Binding(
+                    get: { Color(red: currentColor.red, green: currentColor.green, blue: currentColor.blue) },
+                    set: { color in
+                        guard let rgb = color.srgbComponents() else { return }
+                        viewModel.setLipstickColor(MakeupTint(red: rgb.red, green: rgb.green, blue: rgb.blue))
+                    }))
+            sliderPanel(\.lipstick, AdjustmentParameters.intensityRange)
+        }
+    }
+
+    private var cutoutPanel: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 10) {
+                Button { cutoutMode = .keep } label: { Label("cutout.keep", systemImage: "paintbrush.pointed.fill") }
+                    .buttonStyle(PillButtonStyle(isOn: cutoutMode == .keep))
+                Button { cutoutMode = .erase } label: { Label("cutout.erase", systemImage: "eraser.fill") }
+                    .buttonStyle(PillButtonStyle(isOn: cutoutMode == .erase))
+                Button { viewModel.clearMaskStrokes() } label: { Label("cutout.reset", systemImage: "arrow.uturn.backward") }
+                    .buttonStyle(PillButtonStyle())
+                    .disabled(viewModel.parameters.maskStrokes?.isEmpty != false)
+                    .opacity(viewModel.parameters.maskStrokes?.isEmpty != false ? 0.5 : 1)
+            }
+            TrackSlider(value: $cutoutBrushRadius, range: AdjustmentParameters.maskBrushRadiusRange, onEditingEnded: {})
+            if !viewModel.hasSubjectMask {
+                Text("cutout.noSubject").font(.footnote).foregroundStyle(.secondary)
+            } else if viewModel.hasComposition {
+                Text("cutout.blockedByComposition").font(.footnote).foregroundStyle(.orange)
+            } else {
+                Text("cutout.hint").font(.footnote).foregroundStyle(.secondary)
             }
         }
     }
