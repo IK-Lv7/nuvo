@@ -2,6 +2,7 @@ import CoreImage
 import NuvoCore
 import PhotosUI
 import SwiftUI
+import UIKit
 
 /// 複数の写真を選んだあとの、組み合わせ方を決める画面。決まったレイアウトから選び、
 /// 余白・背景色を調整して、1枚の写真として編集画面へ渡す。
