@@ -62,9 +62,10 @@ final class StampOverlayCodableTests: XCTestCase {
     /// `imageAssetName` を追加する前に保存されたルックにこの項目が無くても読めること
     /// (AdjustmentParameters.highResolution と同じ考え方)。
     func testDecodesWithoutImageAssetNameField() throws {
+        // CGPoint の Codable 実装は {"x":...,"y":...} ではなく [x, y](順序付きコンテナ)でエンコードされる。
         let json = """
         {"id":"9D3E1B9E-1234-4A5B-9C1D-000000000000","symbolName":"heart.fill",
-         "center":{"x":0.5,"y":0.5},"size":0.2,"color":"white"}
+         "center":[0.5,0.5],"size":0.2,"color":"white"}
         """
         let stamp = try JSONDecoder().decode(StampOverlay.self, from: Data(json.utf8))
         XCTAssertNil(stamp.imageAssetName)
