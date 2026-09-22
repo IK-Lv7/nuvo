@@ -4,6 +4,8 @@ import SwiftUI
 /// 起動直後の画面。何ができるアプリかと、Nuvo の立場(無料・透かしなし・オフライン)を最初に伝える。
 struct EmptyStateView: View {
     @Binding var pickerItem: PhotosPickerItem?
+    /// コラージュ用に選んだ写真(2〜4枚)。EditorView がこれを見て、組み合わせ方を選ぶ画面を開く。
+    @Binding var collageItems: [PhotosPickerItem]
 
     var body: some View {
         VStack(spacing: 28) {
@@ -25,6 +27,11 @@ struct EmptyStateView: View {
                     .background(Theme.brandGradient, in: Capsule())
                     .foregroundStyle(Color.white)
             }
+            PhotosPicker(selection: $collageItems, maxSelectionCount: 4, matching: .images) {
+                Label("empty.collage", systemImage: "square.grid.2x2")
+                    .font(.subheadline.weight(.medium))
+            }
+            .buttonStyle(PillButtonStyle())
             HStack(spacing: 8) {
                 badge("empty.badge.free", "gift")
                 badge("empty.badge.noWatermark", "checkmark.seal")

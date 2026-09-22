@@ -6,6 +6,7 @@ import SwiftUI
 struct EditorView: View {
     @State private var viewModel = EditorViewModel()
     @State private var pickerItem: PhotosPickerItem?
+    @State private var collageItems: [PhotosPickerItem] = []
     @State private var categoryID = EditorCatalog.categories[0].id
     @State private var toolID = EditorCatalog.categories[0].tools[0].id
     @State private var isHealing = false
@@ -61,7 +62,7 @@ struct EditorView: View {
             if viewModel.hasImage {
                 editor
             } else {
-                EmptyStateView(pickerItem: $pickerItem)
+                EmptyStateView(pickerItem: $pickerItem, collageItems: $collageItems)
                     .overlay(alignment: .topTrailing) {
                         Button { showsSettings = true } label: { Image(systemName: "gearshape") }
                             .buttonStyle(IconButtonStyle())
@@ -75,9 +76,25 @@ struct EditorView: View {
         .sheet(item: Binding(get: { viewModel.shareItem }, set: { if $0 == nil { viewModel.clearShare() } })) { item in
             ShareSheet(url: item.url).presentationDetents([.medium, .large])
         }
+        // 2〜4 枚選んだときだけ、組み合わせ方を選ぶ画面を開く。1 枚なら普通に読み込む。
+        .sheet(isPresented: Binding(get: { collageItems.count >= 2 }, set: { if !$0 { collageItems = [] } })) {
+            CollageComposerView(items: collageItems, onCompose: { image in
+                collageItems = []
+                viewModel.loadComposed(image)
+            }, onCancel: { collageItems = [] })
+        }
         .sensoryFeedback(.selection, trigger: toolID)
         .onChange(of: pickerItem) { _, item in
             guard let item else { return }
+            Task {
+                guard let data = try? await item.loadTransferable(type: Data.self) else { return }
+                viewModel.load(data: data)
+            }
+        }
+        .onChange(of: collageItems) { _, items in
+            // 1 枚だけ選んだときは、コラージュ画面を開かず、普通の写真として読み込む。
+            guard items.count == 1, let item = items.first else { return }
+            collageItems = []
             Task {
                 guard let data = try? await item.loadTransferable(type: Data.self) else { return }
                 viewModel.load(data: data)

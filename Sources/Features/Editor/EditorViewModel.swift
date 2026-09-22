@@ -78,12 +78,27 @@ final class EditorViewModel {
 
     func load(data: Data) {
         guard let image = renderer.loadImage(from: data) else { return }
+        let preview = beginEditing(image: image, metadata: renderer.readMetadata(from: data))
+        analysisTask?.cancel()
+        analysisTask = Task { await analyze(preview: preview, data: data) }
+    }
+
+    /// 複数の写真を組み合わせた1枚(コラージュ)など、すでに用意した画像を、通常の写真と同じように読み込む。
+    /// 合成した画像なので、元の写真に埋め込まれた位置情報・ポートレートの深度は引き継がない。
+    func loadComposed(_ image: CIImage) {
+        let preview = beginEditing(image: image, metadata: [:])
+        analysisTask?.cancel()
+        analysisTask = Task { await analyze(preview: preview, data: Data()) }
+    }
+
+    /// 読み込みの共通処理。状態をリセットし、縮小したプレビューを返す(解析・書き出しはそれぞれの呼び出し元で行う)。
+    private func beginEditing(image: CIImage, metadata: [String: Any]) -> CIImage {
         let preview = renderer.downscaled(image)
         fullImage = image
         analysis = nil
         detectedFaces = []
         maskOverlayImage = nil
-        sourceMetadata = renderer.readMetadata(from: data)
+        sourceMetadata = metadata
         previewSource = renderer.makeSource(image: preview)
         originalPreview = renderer.cgImage(from: preview)
         history = UndoHistory(initial: AdjustmentParameters())
@@ -97,10 +112,7 @@ final class EditorViewModel {
         idPhotoUnavailable = false
         imageRevision += 1
         scheduleRender()
-
-        // 顔検出・切り抜き・深度・肌の事前計算は重いため、画像を先に表示してから裏で行う。
-        analysisTask?.cancel()
-        analysisTask = Task { await analyze(preview: preview, data: data) }
+        return preview
     }
 
     func value(for keyPath: WritableKeyPath<AdjustmentParameters, Double>) -> Double {

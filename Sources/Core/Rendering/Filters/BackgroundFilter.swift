@@ -5,7 +5,7 @@ import CoreImage.CIFilterBuiltins
 public enum BackgroundColor: String, CaseIterable, Sendable, Codable {
     case white, lightBlue, lightGray
 
-    var ciColor: CIColor {
+    public var ciColor: CIColor {
         switch self {
         case .white: CIColor(red: 1, green: 1, blue: 1)
         case .lightBlue: CIColor(red: 0.72, green: 0.85, blue: 0.98)

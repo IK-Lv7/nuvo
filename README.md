@@ -64,6 +64,9 @@ Save as JPEG, HEIC, or PNG at the quality you want. Location data can be removed
 **Enhance quality**
 Double the resolution and sharpen the result with a single tap — no AI model, no upload, just Core Image running on your phone.
 
+**Collages**
+Start from two to four photos and combine them into one with a tile layout, adjustable spacing, and a background color. Once combined, it edits like any other photo — filters, text, stamps, all of it.
+
 ## Made to look like you
 
 Editing should make you look like the best version of yourself, not like a different person. Nuvo is tuned for restraint: gentle skin smoothing that keeps texture, natural-looking limits on every effect, and an easy press-and-hold to compare with your original at any time.
