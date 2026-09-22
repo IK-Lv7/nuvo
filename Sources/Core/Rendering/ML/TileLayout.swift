@@ -55,6 +55,12 @@ public enum TileLayout {
     /// パディングはしない)。
     static func axis(extent: Int, tileSize: Int, overlap: Int) -> [Segment]? {
         guard tileSize > overlap * 2, extent >= tileSize else { return nil }
+        // 画像がちょうどタイル1枚ぶんの大きさなら、1枚で足りる(分ける意味がない)。
+        // これを特別扱いしないと、以下の stride 基準の分割が無駄に複数枚へ割ってしまう
+        // (source が全タイルとも同じ [0, extent) になるだけで、結果は壊れないが無駄に遅い)。
+        if extent == tileSize {
+            return [Segment(keep: 0..<extent, source: 0..<extent)]
+        }
         let stride = tileSize - overlap * 2
         var starts = Swift.stride(from: 0, to: extent, by: stride).map { $0 }
         if let last = starts.last, last >= extent { starts.removeLast() }
