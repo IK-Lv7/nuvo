@@ -14,8 +14,15 @@ public final class ImageRenderer: @unchecked Sendable {
 
     private let context = CIContext()
     private let pipeline = RenderPipeline()
+    /// 高画質化で使う Core ML モデル。読み込みコストが大きいため `init` で1度だけ読み込んで使い回す。
+    /// `lazy var` にしない理由: このクラスは `@unchecked Sendable` でバックグラウンドから並行して
+    /// 呼ばれうるため、初回アクセスを競合させたくない。`let` なら `init` 時点で確定し、以降は読み取りだけになる。
+    /// 同梱していない(または読み込めない)場合は nil のままで、高画質化は Core Image だけで処理する。
+    private let restorationModel: RestorationModel?
 
-    public init() {}
+    public init() {
+        restorationModel = RestorationModel.loadBundled()
+    }
 
     /// 写真の向き情報を反映した状態で読み込む。
     public func loadImage(from data: Data) -> CIImage? {
@@ -78,7 +85,7 @@ public final class ImageRenderer: @unchecked Sendable {
     }
 
     public func render(_ source: RenderSource, parameters: AdjustmentParameters) -> CGImage? {
-        let output = pipeline.apply(parameters, to: source, context: context)
+        let output = pipeline.apply(parameters, to: source, context: context, restorationModel: restorationModel)
         // 切り出し(証明写真)で範囲が変わるため、出力の範囲で描画する。
         let extent = output.extent.isInfinite || output.extent.isNull ? source.image.extent : output.extent
         return context.createCGImage(output, from: extent)
@@ -94,7 +101,7 @@ public final class ImageRenderer: @unchecked Sendable {
                             format: ExportFormat = .jpeg, quality: Double = ImageRenderer.defaultQuality,
                             metadata: [String: Any] = [:], stripLocation: Bool = true) -> (data: Data, format: ExportFormat)? {
         guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return nil }
-        let output = pipeline.apply(parameters, to: source, context: context)
+        let output = pipeline.apply(parameters, to: source, context: context, restorationModel: restorationModel)
         let extent = output.extent.isInfinite || output.extent.isNull ? source.image.extent : output.extent
         guard let cgImage = context.createCGImage(output, from: extent, format: .RGBA8, colorSpace: colorSpace) else { return nil }
         let properties = ImageWriter.sanitized(metadata, stripLocation: stripLocation,

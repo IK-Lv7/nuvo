@@ -84,7 +84,7 @@ iOS 17 以降の iPhone。日本語と英語に対応しています。
 
 ## 開発者の方へ
 
-Nuvo は Swift と SwiftUI で書かれ、Apple 標準のフレームワーク(Core Image、Vision、Photos)だけで動きます。**外部ライブラリには依存していません。**
+Nuvo は Swift と SwiftUI で書かれ、Apple 標準のフレームワーク(Core Image、Vision、Photos)だけで動きます。**外部のコードには依存していません。** 唯一の例外は、「高画質化」で使う小さな Core ML モデルで、第三者のオープンソースの学習済みモデルを変換したものです。ライセンスは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。
 
 - プロジェクトの方針とルールは [AGENTS.md](AGENTS.md) にあります。[CONTRIBUTING.md](CONTRIBUTING.md) もご覧ください。ルールは `scripts/check_policy.py` で自動的に確認されます。
 - アプリのプロジェクトは、`project.yml` から [XcodeGen](https://github.com/yonaskolb/XcodeGen) で生成します。コアのライブラリは、Mac で `swift test` によりテストできます。

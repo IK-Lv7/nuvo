@@ -19,7 +19,10 @@ public struct RenderPipeline: Sendable {
 
     public init() {}
 
-    func apply(_ parameters: AdjustmentParameters, to source: RenderSource, context: CIContext) -> CIImage {
+    /// `restorationModel` は高画質化で使う(nil なら Core Image だけの処理にフォールバックする)。
+    /// 読み込みコストが大きいため、呼び出し側(`ImageRenderer`)で使い回したものを受け取る。
+    func apply(_ parameters: AdjustmentParameters, to source: RenderSource, context: CIContext,
+              restorationModel: RestorationModel?) -> CIImage {
         let p = parameters.clamped()
         var image = source.image
 
@@ -53,7 +56,7 @@ public struct RenderPipeline: Sendable {
         image = GeometryAdjust.apply(p, to: image)
         // 高画質化は、構図を確定した後・文字を置く前に行う。先にすると拡大対象が増えて無駄に重くなり、
         // 後にすると文字が拡大前の解像度のまま引き伸ばされてぼける。
-        image = QualityBoost.apply(p, to: image)
+        image = QualityBoost.apply(p, to: image, context: context, model: restorationModel)
         // 文字・スタンプは最後に、完成した構図の上に置く(位置は最終画像に対する相対値)。
         image = TextRenderer.apply(p.texts, to: image)
         return StampRenderer.apply(p.stamps ?? [], to: image)

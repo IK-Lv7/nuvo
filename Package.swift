@@ -12,7 +12,10 @@ let package = Package(
     targets: [
         .target(
             name: "NuvoCore",
-            path: "Sources/Core"
+            path: "Sources/Core",
+            // 復元・強化系機能(高画質化など)で使う、同梱の Core ML モデル置き場。
+            // まだモデル本体はなく、README だけが入っている(scripts/model_conversion/README.md 参照)。
+            resources: [.copy("Resources/Models")]
         ),
         .testTarget(
             name: "NuvoCoreTests",

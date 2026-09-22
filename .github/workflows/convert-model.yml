@@ -1,0 +1,54 @@
+name: Convert restoration model
+
+# 手動実行のみ。高画質化・復元系機能で使う Core ML モデルを、公式チェックポイントから
+# 一度だけ変換するための使い捨てジョブ(アプリの通常のビルドやテストには含まれない)。
+# 生成物は Artifact としてのみ出す。リポジトリへのコミットは、中身を確認したうえで人が行う。
+on:
+  workflow_dispatch:
+    inputs:
+      checkpoint_url:
+        description: "変換元チェックポイントの URL"
+        required: false
+        default: "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-x4v3.pth"
+      output_name:
+        description: "出力する .mlpackage のファイル名"
+        required: false
+        default: "RealESRGANGeneralX4V3.mlpackage"
+
+permissions:
+  contents: read
+
+jobs:
+  convert:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        # CI の使い捨て環境にだけ入れる。アプリ本体の依存には数えない(scripts/model_conversion/README.md 参照)。
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install coremltools numpy pillow
+
+      - name: Download checkpoint
+        run: curl -L --fail -o checkpoint.pth "${{ inputs.checkpoint_url }}"
+
+      - name: Convert to Core ML and verify
+        # Xcode が無くても、ここのログ(入出力名・入出力サイズ)を見れば
+        # RestorationModel.swift の想定と合っているか確認できる。
+        run: |
+          python3 scripts/model_conversion/convert_realesrgan.py \
+            --checkpoint checkpoint.pth \
+            --output "${{ inputs.output_name }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.output_name }}
+          path: ${{ inputs.output_name }}
+          if-no-files-found: error

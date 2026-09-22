@@ -32,6 +32,8 @@ ALLOWED_IMPORTS = {
     "Foundation", "SwiftUI", "UIKit", "Observation", "Combine", "os",
     "CoreGraphics", "CoreImage", "CoreImage.CIFilterBuiltins", "CoreText", "CoreVideo", "ImageIO",
     "Vision", "Photos", "PhotosUI", "AVFoundation", "Metal", "MetalKit", "Accelerate",
+    # 端末内で動く Core ML(学習済みモデルは同梱。外部通信は発生しない。AGENTS.md 第2章)。
+    "CoreML",
     # AppKit は配布物には入らない。NuvoCore は macOS でも `swift test` できるよう macOS もターゲットにしており
     # (Package.swift)、SF Symbols の取得など、UIKit の代わりに `#if canImport(AppKit)` で使う箇所がある。
     "AppKit",

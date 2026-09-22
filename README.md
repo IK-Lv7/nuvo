@@ -84,7 +84,7 @@ Found a bug, or want to tell us how a result looks? [Open an issue](../../issues
 
 ## For developers
 
-Nuvo is written in Swift and SwiftUI on top of Apple's own frameworks (Core Image, Vision, Photos), with **no third-party dependencies**.
+Nuvo is written in Swift and SwiftUI on top of Apple's own frameworks (Core Image, Vision, Photos), with **no third-party code**. The one exception is a small bundled Core ML model (used for "Enhance quality") converted from a third-party open-source checkpoint; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for its license.
 
 - The project's principles and rules are in [AGENTS.md](AGENTS.md); see also [CONTRIBUTING.md](CONTRIBUTING.md). The rules are checked automatically by `scripts/check_policy.py`.
 - The app project is generated with [XcodeGen](https://github.com/yonaskolb/XcodeGen) from `project.yml`; the core library can be tested with `swift test` on a Mac.
