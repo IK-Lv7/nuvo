@@ -50,6 +50,55 @@ public enum FaceGeometry {
         points.map { CGPoint(x: $0.x * size.width, y: $0.y * size.height) }
     }
 
+    // MARK: 顔の傾き(ロール)
+
+    /// 顔の左右(横)・上下(縦)方向を表す単位ベクトルの組。
+    /// 顔が傾いている(ロール)ときに、変形の判定・押し出す向きを画像の x/y ではなくこの基準で行うために使う。
+    public struct FaceAxes: Equatable {
+        /// 顔の左右方向。符号(どちらが正か)は目の left/right の割り当てに依存するが、
+        /// 側面の判定(`projected`)と押し出す向きの両方で同じ軸を使う限り、結果はその割り当てに依存しない。
+        public var horizontal: CGPoint
+        /// 顔の上下方向。口に近い側を正とする。
+        public var vertical: CGPoint
+
+        public init(horizontal: CGPoint, vertical: CGPoint) {
+            self.horizontal = horizontal
+            self.vertical = vertical
+        }
+    }
+
+    /// 傾きのない(画像そのままの)軸。両目が検出できないときのフォールバックに使う。
+    private static let uprightAxes = FaceAxes(horizontal: CGPoint(x: 1, y: 0), vertical: CGPoint(x: 0, y: 1))
+
+    /// 両目・口の位置から顔の傾き(ロール)を求める。座標系は問わない(正規化・ピクセルどちらでもよい)が、
+    /// 呼び出し側の他の座標と揃えること。両目のどちらかが取れない場合は傾きなしの軸を返す。
+    public static func faceAxes(leftEye: [CGPoint], rightEye: [CGPoint], mouth: [CGPoint]) -> FaceAxes {
+        guard leftEye.count >= 3, rightEye.count >= 3 else { return uprightAxes }
+        let left = centroid(leftEye)
+        let right = centroid(rightEye)
+        let dx = right.x - left.x, dy = right.y - left.y
+        let length = (dx * dx + dy * dy).squareRoot()
+        guard length > 0 else { return uprightAxes }
+        let horizontal = CGPoint(x: dx / length, y: dy / length)
+        // horizontal を 90° 回した2方向のうち、口に近い側を「下(あご方向)」として選ぶ。
+        // Vision の left/right の割り当て(解剖学的な左右で、画像上の左右と一致するとは限らない)に依存しないため。
+        var vertical = CGPoint(x: -horizontal.y, y: horizontal.x)
+        if mouth.count >= 3 {
+            let eyeMid = CGPoint(x: (left.x + right.x) / 2, y: (left.y + right.y) / 2)
+            let mouthCenter = centroid(mouth)
+            let toward = (mouthCenter.x - eyeMid.x) * vertical.x + (mouthCenter.y - eyeMid.y) * vertical.y
+            if toward < 0 { vertical = CGPoint(x: -vertical.x, y: -vertical.y) }
+        }
+        return FaceAxes(horizontal: horizontal, vertical: vertical)
+    }
+
+    /// `point` を `origin` を原点とした `axes` 基準の局所座標(横・縦)に射影する。
+    public static func projected(_ point: CGPoint, origin: CGPoint, axes: FaceAxes) -> CGPoint {
+        let offsetX = point.x - origin.x, offsetY = point.y - origin.y
+        return CGPoint(x: offsetX * axes.horizontal.x + offsetY * axes.horizontal.y,
+                       y: offsetX * axes.vertical.x + offsetY * axes.vertical.y)
+    }
+
     public static func boundingRect(of points: [CGPoint]) -> CGRect {
         guard let first = points.first else { return .zero }
         var minX = first.x, maxX = first.x, minY = first.y, maxY = first.y

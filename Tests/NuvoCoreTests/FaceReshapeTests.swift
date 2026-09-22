@@ -56,10 +56,33 @@ final class FaceReshapeTests: XCTestCase {
         XCTAssertGreaterThan(field.dx[50 * side + 20], 0)
     }
 
+    /// 頭を 90° 傾けた顔では、輪郭 (20, 50)・(80, 50) は (50, 20)・(50, 80) に来る。
+    /// 「頬を内側へ寄せる」向きも画像の x ではなく顔自身の左右方向(ここでは y)に出るはず。
+    func testFaceSlimFollowsTheFacesRollNotTheImageAxes() throws {
+        let face = TestFaces.rotated90(TestFaces.full())
+        let field = try XCTUnwrap(FaceReshape.field(face: face, imageSize: imageSize, roiOrigin: .zero,
+                                                    width: side, height: side, faceSlim: 1, eyeEnlarge: 0, chin: 0))
+        XCTAssertLessThan(field.dy[20 * side + 50], 0)
+        XCTAssertGreaterThan(field.dy[80 * side + 50], 0)
+        // 画像の x 方向にはほとんど動かさない(横倒しの顔では、それは顔の上下方向にあたる)。
+        XCTAssertEqual(field.dx[20 * side + 50], 0, accuracy: 0.001)
+        XCTAssertEqual(field.dx[80 * side + 50], 0, accuracy: 0.001)
+    }
+
     func testChinMovesContentUpForPositiveValue() throws {
         let field = try XCTUnwrap(field(chin: 1))
         // あご先 (50, 90) では下側から色を引き、あごが短くなる。
         XCTAssertGreaterThan(field.dy[90 * side + 50], 0)
+    }
+
+    /// 90° 傾いた顔では、あご先 (50, 90) は (10, 50) に来る。「あごを短くする」向きも
+    /// 画像の y ではなく顔自身の上下方向(ここでは -x)に出るはず。
+    func testChinFollowsTheFacesRollNotTheImageAxes() throws {
+        let face = TestFaces.rotated90(TestFaces.full())
+        let field = try XCTUnwrap(FaceReshape.field(face: face, imageSize: imageSize, roiOrigin: .zero,
+                                                    width: side, height: side, faceSlim: 0, eyeEnlarge: 0, chin: 1))
+        XCTAssertLessThan(field.dx[50 * side + 10], 0)
+        XCTAssertEqual(field.dy[50 * side + 10], 0, accuracy: 0.001)
     }
 
     func testNoseSlimPullsTheWingsInwardFromBothSides() throws {

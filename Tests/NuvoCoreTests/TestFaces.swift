@@ -47,4 +47,31 @@ enum TestFaces {
         face.noseCrest = [CGPoint(x: 0.5, y: 0.42), CGPoint(x: 0.5, y: 0.48), CGPoint(x: 0.5, y: 0.54), CGPoint(x: 0.5, y: 0.6)]
         return face
     }
+
+    /// `face` を画像の中心 (0.5, 0.5) まわりに 90° 回転させる(頭を横に倒した状態を作る)。
+    /// 顔の傾き(ロール)を考慮した変形が正しく効くかどうかのテストに使う。
+    static func rotated90(_ face: FaceLandmarks) -> FaceLandmarks {
+        func rotate(_ p: CGPoint) -> CGPoint {
+            let cx: CGFloat = 0.5, cy: CGFloat = 0.5
+            return CGPoint(x: cx - (p.y - cy), y: cy + (p.x - cx))
+        }
+        var rotated = face
+        let corners = [face.boundingBox.origin,
+                       CGPoint(x: face.boundingBox.maxX, y: face.boundingBox.minY),
+                       CGPoint(x: face.boundingBox.maxX, y: face.boundingBox.maxY),
+                       CGPoint(x: face.boundingBox.minX, y: face.boundingBox.maxY)]
+        rotated.boundingBox = FaceGeometry.boundingRect(of: corners.map(rotate))
+        rotated.faceContour = face.faceContour.map(rotate)
+        rotated.leftEye = face.leftEye.map(rotate)
+        rotated.rightEye = face.rightEye.map(rotate)
+        rotated.leftEyebrow = face.leftEyebrow.map(rotate)
+        rotated.rightEyebrow = face.rightEyebrow.map(rotate)
+        rotated.outerLips = face.outerLips.map(rotate)
+        rotated.innerLips = face.innerLips.map(rotate)
+        rotated.nose = face.nose.map(rotate)
+        rotated.noseCrest = face.noseCrest.map(rotate)
+        rotated.leftPupil = face.leftPupil.map(rotate)
+        rotated.rightPupil = face.rightPupil.map(rotate)
+        return rotated
+    }
 }

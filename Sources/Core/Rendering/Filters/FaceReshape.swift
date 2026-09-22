@@ -69,6 +69,19 @@ enum FaceReshape {
         let faceHeight = Double(face.boundingBox.height * imageSize.height)
         let faceTop = Double(face.boundingBox.minY * imageSize.height) - Double(roiOrigin.y)
         let faceCenterX = Double(face.boundingBox.midX * imageSize.width) - Double(roiOrigin.x)
+        let faceCenter = CGPoint(x: faceCenterX, y: faceTop + faceHeight / 2)
+
+        // 顔の傾き(ロール)を反映した左右・上下の基準軸。以下の判定は元々「顔がまっすぐ立っている」
+        // 前提(画像の x = 顔の左右、y = 顔の上下)で書かれているため、各点をこの軸で顔の中心まわりに
+        // 回転させ、「まっすぐ立っているとしたときの位置」に直してから判定する(押し出す向きだけ、
+        // 最後にこの軸で画像座標へ戻す)。傾きがなければ axes は画像そのままの軸になり、結果は変わらない。
+        let axes = FaceGeometry.faceAxes(leftEye: face.leftEye.count >= 3 ? toROI(face.leftEye) : [],
+                                         rightEye: face.rightEye.count >= 3 ? toROI(face.rightEye) : [],
+                                         mouth: face.outerLips.count >= 3 ? toROI(face.outerLips) : [])
+        let upright = { (point: CGPoint) -> CGPoint in
+            let local = FaceGeometry.projected(point, origin: faceCenter, axes: axes)
+            return CGPoint(x: faceCenter.x + local.x, y: faceCenter.y + local.y)
+        }
 
         if eyeEnlarge != 0 {
             let scale = Float(min(max(eyeEnlarge, -1), 1)) * eyeMaxScale
@@ -87,36 +100,40 @@ enum FaceReshape {
         if faceSlim != 0, contour.count >= 3 {
             let strength = min(max(faceSlim, -1), 1) * slimMaxShift * faceWidth
             for point in contour {
+                let u = upright(point)
                 // 頬の下半分から顎にかけてだけ動かす(こめかみを動かすと耳や髪が崩れる)。
-                let vertical = smoothStep((Double(point.y) - faceTop) / faceHeight, from: 0.35, to: 0.65)
+                let vertical = smoothStep((Double(u.y) - faceTop) / faceHeight, from: 0.35, to: 0.65)
                 // 顎先(中心線付近)は左右どちらへも動かせないため、中心から離れるほど強くする。
-                let side = min(max((Double(point.x) - faceCenterX) / (0.15 * faceWidth), -1), 1)
+                let side = min(max((Double(u.x) - faceCenterX) / (0.15 * faceWidth), -1), 1)
                 let shift = Float(strength * vertical * side)
                 accumulate(&field, center: point, radius: faceWidth * 0.22) { _, _, weight in
-                    (shift * weight, 0)
+                    (shift * weight * Float(axes.horizontal.x), shift * weight * Float(axes.horizontal.y))
                 }
             }
         }
 
-        if chin != 0, let chinPoint = contour.max(by: { $0.y < $1.y }) {
+        if chin != 0, let chinPoint = contour.max(by: { upright($0).y < upright($1).y }) {
             let shift = Float(min(max(chin, -1), 1) * chinMaxShift * faceWidth)
             accumulate(&field, center: chinPoint, radius: faceWidth * 0.28) { _, _, weight in
-                (0, shift * weight)
+                (shift * weight * Float(axes.vertical.x), shift * weight * Float(axes.vertical.y))
             }
         }
         if noseSlim != 0, face.nose.count >= 3 {
             let nose = toROI(face.nose)
-            let noseWidth = Double(FaceGeometry.boundingRect(of: nose).width)
+            let uprightNose = nose.map(upright)
+            let noseWidth = Double(FaceGeometry.boundingRect(of: uprightNose).width)
             let centerX = face.noseCrest.count >= 2
-                ? Double(FaceGeometry.centroid(toROI(face.noseCrest)).x)
-                : Double(FaceGeometry.boundingRect(of: nose).midX)
+                ? Double(upright(FaceGeometry.centroid(toROI(face.noseCrest))).x)
+                : Double(FaceGeometry.boundingRect(of: uprightNose).midX)
             if noseWidth > 0 {
                 let strength = min(max(noseSlim, -1), 1) * noseMaxShift * noseWidth
-                for point in nose {
+                for (index, point) in nose.enumerated() {
                     // 小鼻(中心線から離れた点)ほど強く、中心線上の点は動かさない。
-                    let side = min(max((Double(point.x) - centerX) / (0.25 * noseWidth), -1), 1)
+                    let side = min(max((Double(uprightNose[index].x) - centerX) / (0.25 * noseWidth), -1), 1)
                     let shift = Float(strength * side)
-                    accumulate(&field, center: point, radius: noseWidth * 0.5) { _, _, weight in (shift * weight, 0) }
+                    accumulate(&field, center: point, radius: noseWidth * 0.5) { _, _, weight in
+                        (shift * weight * Float(axes.horizontal.x), shift * weight * Float(axes.horizontal.y))
+                    }
                 }
             }
         }

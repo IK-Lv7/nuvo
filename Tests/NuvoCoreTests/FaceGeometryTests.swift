@@ -81,4 +81,46 @@ final class FaceGeometryTests: XCTestCase {
         let center = try XCTUnwrap(FaceGeometry.pupilCenter(for: eye, pupils: []))
         XCTAssertEqual(center, FaceGeometry.centroid(eye))
     }
+
+    // MARK: 顔の傾き(ロール)
+
+    func testFaceAxesAreUprightWhenEyesAreLevel() {
+        let axes = FaceGeometry.faceAxes(leftEye: [CGPoint(x: 40, y: 45)], rightEye: [CGPoint(x: 60, y: 45)],
+                                         mouth: [CGPoint(x: 50, y: 70)])
+        XCTAssertEqual(axes.horizontal.x, 1, accuracy: 0.001)
+        XCTAssertEqual(axes.horizontal.y, 0, accuracy: 0.001)
+        XCTAssertEqual(axes.vertical.x, 0, accuracy: 0.001)
+        XCTAssertEqual(axes.vertical.y, 1, accuracy: 0.001)
+    }
+
+    /// 頭を右に 90° 傾けた状態(元は横並びの目が縦に並ぶ)。
+    func testFaceAxesFollowARolledFace() {
+        let axes = FaceGeometry.faceAxes(leftEye: [CGPoint(x: 50, y: 40)], rightEye: [CGPoint(x: 50, y: 60)],
+                                         mouth: [CGPoint(x: 30, y: 50)])
+        XCTAssertEqual(axes.horizontal.x, 0, accuracy: 0.001)
+        XCTAssertEqual(axes.horizontal.y, 1, accuracy: 0.001)
+        // 口が (30, 50) にあるので、「下(あご方向)」はマイナス x。
+        XCTAssertEqual(axes.vertical.x, -1, accuracy: 0.001)
+        XCTAssertEqual(axes.vertical.y, 0, accuracy: 0.001)
+    }
+
+    func testFaceAxesFallBackWhenEyesAreMissing() {
+        let axes = FaceGeometry.faceAxes(leftEye: [], rightEye: [CGPoint(x: 60, y: 45)], mouth: [])
+        XCTAssertEqual(axes.horizontal, CGPoint(x: 1, y: 0))
+        XCTAssertEqual(axes.vertical, CGPoint(x: 0, y: 1))
+    }
+
+    func testProjectedMatchesImageAxesWhenUpright() {
+        let axes = FaceGeometry.FaceAxes(horizontal: CGPoint(x: 1, y: 0), vertical: CGPoint(x: 0, y: 1))
+        let local = FaceGeometry.projected(CGPoint(x: 70, y: 30), origin: CGPoint(x: 50, y: 50), axes: axes)
+        XCTAssertEqual(local, CGPoint(x: 20, y: -20))
+    }
+
+    func testProjectedRotatesIntoTheFaceLocalFrame() {
+        // 90° 傾いた顔の軸(上のテストと同じ。vertical=(-1, 0) なので、あご方向は画像上「左」)。
+        // 画像上「右」(+x)に 20 ずれた点は、あごとは逆側(顔から見て「上」)に 20 ずれている。
+        let axes = FaceGeometry.FaceAxes(horizontal: CGPoint(x: 0, y: 1), vertical: CGPoint(x: -1, y: 0))
+        let local = FaceGeometry.projected(CGPoint(x: 70, y: 50), origin: CGPoint(x: 50, y: 50), axes: axes)
+        XCTAssertEqual(local, CGPoint(x: 0, y: -20))
+    }
 }
