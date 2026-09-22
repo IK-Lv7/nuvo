@@ -2,6 +2,7 @@ import CoreGraphics
 import CoreImage
 import CoreML
 import CoreVideo
+import Foundation
 
 /// 画像の復元・強化(超解像・将来的なノイズ除去など)に使う、同梱の Core ML モデルのラッパー。
 /// タイル分割は `TileLayout` に任せ、ここでは Core ML の呼び出しと画像の結合だけを行う。
@@ -31,15 +32,70 @@ public struct RestorationModel {
     /// アプリに同梱したモデルを読み込む。同梱していない、またはうまく読み込めない場合は nil
     /// (呼び出し側は、その場合 Core Image だけの処理にフォールバックすること)。
     public static func loadBundled() -> RestorationModel? {
-        guard let url = Bundle.module.url(forResource: "RealESRGANGeneralX4V3", withExtension: "mlpackage")
-            ?? Bundle.module.url(forResource: "RealESRGANGeneralX4V3", withExtension: "mlmodelc") else {
-            return nil
-        }
+        guard let url = bundledPackageURL() else { return nil }
+        guard let compiledURL = compiledModelURL(for: url) else { return nil }
         let configuration = MLModelConfiguration()
         configuration.computeUnits = .all
-        guard let model = try? MLModel(contentsOf: url, configuration: configuration) else { return nil }
+        guard let model = try? MLModel(contentsOf: compiledURL, configuration: configuration) else { return nil }
         // tileSize・overlap は変換スクリプトの既定値、outputScale はモデルの拡大率(4倍)に合わせる。
         return RestorationModel(model: model, tileSize: 128, overlap: 16, outputScale: 4)
+    }
+
+    /// 同梱モデルの URL(`.mlpackage` または、あらかじめコンパイル済みの `.mlmodelc`)。
+    /// リソースが本当に同梱されているかどうかをテストからも確認できるよう、`internal` で公開する
+    /// (`loadBundled()` の nil は「同梱されていない」と「同梱されているが読み込みに失敗した」の
+    /// 両方で起こりうるため、テスト側でこの2つを区別するのに使う)。
+    static func bundledPackageURL() -> URL? {
+        // Package.swift の `.copy("Resources/Models")` はフォルダ構造を保ったままコピーするため、
+        // バンドル直下ではなく "Models" フォルダの中に入る。ここを省くと永遠に見つからず、
+        // 常に Core Image だけのフォールバックになってしまう。
+        Bundle.module.url(forResource: "RealESRGANGeneralX4V3", withExtension: "mlpackage", subdirectory: "Models")
+            ?? Bundle.module.url(forResource: "RealESRGANGeneralX4V3", withExtension: "mlmodelc",
+                                 subdirectory: "Models")
+    }
+
+    /// `.mlpackage` は未コンパイルの状態では `MLModel(contentsOf:)` に渡せない
+    /// (「コンパイル済みでない」エラーで失敗する)。Xcode プロジェクトに直接モデルを追加した場合は
+    /// ビルド時に Xcode の "Core ML Model Compiler" が自動でコンパイルしてくれるが、
+    /// Swift Package のリソースとして `.copy()` しただけのファイルはその対象にならないため、
+    /// ここで明示的にコンパイルする必要がある(すでに `.mlmodelc` を渡された場合は素通しする)。
+    ///
+    /// コンパイルは軽くない処理なので、一度コンパイルした結果はアプリのサポートフォルダに
+    /// キャッシュし、次回起動時はそれを再利用する。同梱モデルが更新された(バンドル内の
+    /// 更新日時がキャッシュより新しい)場合は、古いキャッシュを使わず再コンパイルする。
+    private static func compiledModelURL(for url: URL) -> URL? {
+        guard url.pathExtension == "mlpackage" else { return url }
+
+        if let cacheURL = cachedCompiledModelURL(), isCache(cacheURL, upToDateWith: url) {
+            return cacheURL
+        }
+        guard let compiled = try? MLModel.compileModel(at: url) else { return nil }
+        guard let cacheURL = cachedCompiledModelURL() else { return compiled }
+
+        let fileManager = FileManager.default
+        try? fileManager.createDirectory(at: cacheURL.deletingLastPathComponent(),
+                                         withIntermediateDirectories: true)
+        try? fileManager.removeItem(at: cacheURL)
+        if (try? fileManager.copyItem(at: compiled, to: cacheURL)) != nil {
+            return cacheURL
+        }
+        // キャッシュへのコピーに失敗しても、コンパイル自体は成功しているのでそのまま使う。
+        return compiled
+    }
+
+    private static func cachedCompiledModelURL() -> URL? {
+        guard let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+        else { return nil }
+        return base.appendingPathComponent("CoreMLModels/RealESRGANGeneralX4V3.mlmodelc")
+    }
+
+    private static func isCache(_ cacheURL: URL, upToDateWith sourceURL: URL) -> Bool {
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: cacheURL.path),
+              let cacheDate = try? fileManager.attributesOfItem(atPath: cacheURL.path)[.modificationDate] as? Date,
+              let sourceDate = try? fileManager.attributesOfItem(atPath: sourceURL.path)[.modificationDate] as? Date
+        else { return false }
+        return cacheDate >= sourceDate
     }
 
     /// `image` を `outputScale` 倍に拡大しながら、モデルで復元する。

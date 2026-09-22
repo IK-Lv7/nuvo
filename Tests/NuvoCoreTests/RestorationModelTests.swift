@@ -3,15 +3,18 @@ import CoreImage
 import XCTest
 @testable import NuvoCore
 
-/// `Sources/Core/Resources/Models/RealESRGANGeneralX4V3.mlpackage` をまだ同梱していない今は、
-/// 「nil を返し、呼び出し側が Core Image にフォールバックする」ことだけを確認する(このテストは通る)。
-///
-/// モデルを追加したあとにこのテストを実行すると、実際に Core ML の推論(1タイルぶん)まで
-/// 自動的に確認するようになる。Xcode を開かなくても、`swift test`(このリポジトリでは
-/// `.github/workflows/test.yml` が macOS ランナーで毎回実行している)で分かる。
+/// `RealESRGANGeneralX4V3.mlpackage` は `Sources/Core/Resources/Models/` に同梱済み。
+/// リソース自体が見つからない(将来ファイルを移動・削除した等)ときだけスキップし、
+/// 「同梱されているのに読み込み・推論に失敗する」場合はテストを失敗させる
+/// (`.mlpackage` はコンパイルしてから読み込む必要があり、この違いを区別しないと
+/// コンパイル忘れのような不具合が「モデルなし」として握りつぶされてしまう)。
 final class RestorationModelTests: XCTestCase {
     func testLoadsOrGracefullyReturnsNilWhenNotBundled() throws {
+        let isBundled = RestorationModel.bundledPackageURL() != nil
         guard let model = RestorationModel.loadBundled() else {
+            if isBundled {
+                XCTFail("RealESRGANGeneralX4V3.mlpackage は同梱されているのに RestorationModel.loadBundled() が nil を返した")
+            }
             throw XCTSkip("RealESRGANGeneralX4V3.mlpackage がまだ Sources/Core/Resources/Models/ に無い")
         }
         // モデルがあれば、タイル分割が要る大きさの画像で実際に処理できることを確認する
