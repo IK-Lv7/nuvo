@@ -70,6 +70,8 @@ final class StampOverlayCodableTests: XCTestCase {
         let stamp = try JSONDecoder().decode(StampOverlay.self, from: Data(json.utf8))
         XCTAssertNil(stamp.imageAssetName)
         XCTAssertEqual(stamp.symbolName, "heart.fill")
+        // "white" という色の名前の文字列(color を MakeupTint にする前の形式)も読めること。
+        XCTAssertEqual(stamp.color, TextColorPreset.white.tint)
     }
 
     func testEmojiInitializerSetsBothNames() {
@@ -104,7 +106,7 @@ final class StampRendererTests: XCTestCase {
     }
 
     func testAStampDrawsBrightPixelsOnADarkPhoto() throws {
-        let stamp = StampOverlay(symbolName: "star.fill", center: CGPoint(x: 0.5, y: 0.5), size: 0.3, color: .white)
+        let stamp = StampOverlay(symbolName: "star.fill", center: CGPoint(x: 0.5, y: 0.5), size: 0.3, color: TextColorPreset.white.tint)
         XCTAssertGreaterThan(brightPixelCount(try render([stamp])), 0)
     }
 
@@ -114,13 +116,13 @@ final class StampRendererTests: XCTestCase {
     }
 
     func testStampSizeControlsHowMuchOfThePhotoItCovers() throws {
-        let small = StampOverlay(symbolName: "star.fill", size: 0.1, color: .white)
-        let large = StampOverlay(symbolName: "star.fill", size: 0.4, color: .white)
+        let small = StampOverlay(symbolName: "star.fill", size: 0.1, color: TextColorPreset.white.tint)
+        let large = StampOverlay(symbolName: "star.fill", size: 0.4, color: TextColorPreset.white.tint)
         XCTAssertLessThan(try brightPixelCount(render([small])), try brightPixelCount(render([large])))
     }
 
     func testRenderingKeepsThePhotosOriginalSize() throws {
-        let stamp = StampOverlay(symbolName: "heart.fill", size: 0.5, color: .white)
+        let stamp = StampOverlay(symbolName: "heart.fill", size: 0.5, color: TextColorPreset.white.tint)
         var p = AdjustmentParameters()
         p.stamps = [stamp]
         let cgImage = try XCTUnwrap(renderer.render(renderer.makeSource(image: black()), parameters: p))
@@ -130,7 +132,7 @@ final class StampRendererTests: XCTestCase {
 
     func testAStampNearTheEdgeDoesNotEnlargeTheOutput() throws {
         // 文字と同じ問題(端をはみ出すと出力が広がる)が、スタンプでも起きないことを確かめる。
-        let stamp = StampOverlay(symbolName: "sun.max.fill", center: CGPoint(x: 0.02, y: 0.02), size: 0.3, color: .white)
+        let stamp = StampOverlay(symbolName: "sun.max.fill", center: CGPoint(x: 0.02, y: 0.02), size: 0.3, color: TextColorPreset.white.tint)
         var p = AdjustmentParameters()
         p.stamps = [stamp]
         let cgImage = try XCTUnwrap(renderer.render(renderer.makeSource(image: black()), parameters: p))

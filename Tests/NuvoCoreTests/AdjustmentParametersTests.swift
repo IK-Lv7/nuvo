@@ -306,7 +306,8 @@ final class LookTests: XCTestCase {
 
     func testStampsRoundTripThroughJSON() throws {
         var p = AdjustmentParameters()
-        p.stamps = [StampOverlay(symbolName: "heart.fill", center: CGPoint(x: 0.3, y: 0.4), size: 0.2, color: .pink)]
+        p.stamps = [StampOverlay(symbolName: "heart.fill", center: CGPoint(x: 0.3, y: 0.4), size: 0.2,
+                                 color: TextColorPreset.pink.tint)]
         let decoded = try JSONDecoder().decode(AdjustmentParameters.self, from: JSONEncoder().encode(p))
         XCTAssertEqual(decoded.stamps, p.stamps)
     }

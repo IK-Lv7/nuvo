@@ -62,7 +62,8 @@ public enum EmojiStamp: String, CaseIterable, Sendable {
 }
 
 /// 写真に重ねるスタンプ。位置・大きさは画像サイズに依存しない値で持つので、プレビューでも書き出しでも同じ見た目になる。
-/// 文字入れ(TextOverlay)と同じ考え方で、色は共通の `TextColor` を使う(絵文字画像には効かない。下記参照)。
+/// 文字入れ(TextOverlay)と同じ考え方で、色は共通の `MakeupTint`(カラーコードの任意の色を含む)を使う
+/// (絵文字画像には効かない。下記参照)。
 public struct StampOverlay: Equatable, Sendable, Codable, Identifiable {
     public var id: UUID
     /// SF Symbols の名前("heart.fill" など)。`imageAssetName` がある場合は使わない
@@ -76,12 +77,14 @@ public struct StampOverlay: Equatable, Sendable, Codable, Identifiable {
     public var center: CGPoint
     /// 大きさ(画像の短辺に対する比)。
     public var size: Double
-    public var color: TextColor
+    /// カラーコードで選んだ任意の色も含む(`TextColorPreset` の見本はここへの近道)。
+    public var color: MakeupTint
 
     public static let sizeRange: ClosedRange<Double> = 0.05...0.4
 
     public init(id: UUID = UUID(), symbolName: String, imageAssetName: String? = nil,
-                center: CGPoint = CGPoint(x: 0.5, y: 0.5), size: Double = 0.15, color: TextColor = .white) {
+                center: CGPoint = CGPoint(x: 0.5, y: 0.5), size: Double = 0.15,
+                color: MakeupTint = TextColorPreset.white.tint) {
         self.id = id
         self.symbolName = symbolName
         self.imageAssetName = imageAssetName
@@ -94,5 +97,53 @@ public struct StampOverlay: Equatable, Sendable, Codable, Identifiable {
     public init(id: UUID = UUID(), emoji: EmojiStamp, center: CGPoint = CGPoint(x: 0.5, y: 0.5), size: Double = 0.15) {
         self.init(id: id, symbolName: emoji.fallbackSymbolName, imageAssetName: emoji.assetName,
                   center: center, size: size)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, symbolName, imageAssetName, center, size, color
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        symbolName = try container.decode(String.self, forKey: .symbolName)
+        imageAssetName = try container.decodeIfPresent(String.self, forKey: .imageAssetName)
+        center = try container.decode(CGPoint.self, forKey: .center)
+        size = try container.decode(Double.self, forKey: .size)
+        // 新形式(MakeupTint)を先に試し、ダメなら旧形式(色の名前の文字列)として読む
+        // (TextOverlay.swift の LegacyTextColor と同じ考え方。private なのでファイルをまたいで
+        // 共有できず、下の LegacyStampColor に同じ内容を別途定義している)。
+        if let tint = try? container.decode(MakeupTint.self, forKey: .color) {
+            color = tint
+        } else if let legacy = try? container.decode(LegacyStampColor.self, forKey: .color) {
+            color = legacy.preset.tint
+        } else {
+            color = TextColorPreset.white.tint
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(symbolName, forKey: .symbolName)
+        try container.encodeIfPresent(imageAssetName, forKey: .imageAssetName)
+        try container.encode(center, forKey: .center)
+        try container.encode(size, forKey: .size)
+        try container.encode(color, forKey: .color)
+    }
+}
+
+/// `StampOverlay` 用の後方互換デコード。`TextOverlay.swift` の `LegacyTextColor` と中身は同じだが、
+/// `private` 同士でも別ファイルの型は参照できないため、同じ4色をここにも定義する。
+private enum LegacyStampColor: String, Codable {
+    case white, black, pink, yellow
+
+    var preset: TextColorPreset {
+        switch self {
+        case .white: .white
+        case .black: .black
+        case .pink: .pink
+        case .yellow: .yellow
+        }
     }
 }

@@ -27,7 +27,7 @@ final class TextRendererTests: XCTestCase {
     }
 
     private func overlay(text: String = "MMM", center: CGPoint = CGPoint(x: 0.5, y: 0.5)) -> TextOverlay {
-        TextOverlay(text: text, center: center, size: 0.25, color: .white, style: .standard,
+        TextOverlay(text: text, center: center, size: 0.25, color: TextColorPreset.white.tint, style: .standard,
                     isBold: true, hasShadow: false)
     }
 
@@ -60,7 +60,7 @@ final class TextRendererTests: XCTestCase {
 
     func testColorIsApplied() throws {
         var pink = overlay()
-        pink.color = .pink
+        pink.color = TextColorPreset.pink.tint
         let data = try render([pink])
         // ピンクは R が G・B より強い。
         var red = 0, green = 0
@@ -80,9 +80,22 @@ final class TextRendererTests: XCTestCase {
 
     func testTextOverlayRoundTripsThroughJSON() throws {
         let original = TextOverlay(text: "こんにちは", center: CGPoint(x: 0.3, y: 0.7), size: 0.1,
-                                   color: .yellow, style: .serif, isBold: false, hasShadow: true)
+                                   color: TextColorPreset.yellow.tint, style: .serif, isBold: false, hasShadow: true)
         let decoded = try JSONDecoder().decode(TextOverlay.self, from: JSONEncoder().encode(original))
         XCTAssertEqual(decoded, original)
+    }
+
+    /// `color` を `MakeupTint`(カラーピック対応)にする前に保存されたルックは、
+    /// 色の名前の文字列("pink" など)で入っている。それも読めることを確かめる
+    /// (StampOverlayCodableTests.testDecodesWithoutImageAssetNameField と同じ考え方)。
+    func testDecodesTheOldColorNameFormat() throws {
+        // CGPoint の Codable 実装は {"x":...,"y":...} ではなく [x, y](順序付きコンテナ)でエンコードされる。
+        let json = """
+        {"id":"9D3E1B9E-1234-4A5B-9C1D-000000000001","text":"Nuvo","center":[0.5,0.5],"size":0.08,
+         "color":"pink","style":"standard","isBold":true,"hasShadow":true}
+        """
+        let decoded = try JSONDecoder().decode(TextOverlay.self, from: Data(json.utf8))
+        XCTAssertEqual(decoded.color, TextColorPreset.pink.tint)
     }
 
     func testEveryStyleDrawsVisibleText() throws {

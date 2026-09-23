@@ -68,3 +68,15 @@ struct ColorPresetRow<Preset: Hashable>: View {
             .frame(width: 40, height: 40)
     }
 }
+
+/// `ColorPresetRow.customBinding` 用の、色を選べるどの画面でも同じ変換をする Binding。
+/// SwiftUI の `Color` ⇔ `MakeupTint` の行き来をここに集約する
+/// (リップ・チーク・アイシャドウ・カラコン・文字入れ・スタンプ、すべてこれを使う)。
+func colorPickerBinding(current: MakeupTint, apply: @escaping (MakeupTint) -> Void) -> Binding<Color> {
+    Binding(
+        get: { Color(red: current.red, green: current.green, blue: current.blue) },
+        set: { color in
+            guard let rgb = color.srgbComponents() else { return }
+            apply(MakeupTint(red: rgb.red, green: rgb.green, blue: rgb.blue))
+        })
+}

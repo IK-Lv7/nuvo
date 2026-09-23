@@ -155,7 +155,7 @@ struct ToolPanel: View {
                 title: { LocalizedStringKey.dynamic("lipstick." + $0.rawValue) },
                 selected: currentColor,
                 onSelectPreset: { viewModel.setLipstickColor($0) },
-                customBinding: colorBinding(current: currentColor, apply: { viewModel.setLipstickColor($0) }))
+                customBinding: colorPickerBinding(current: currentColor, apply: { viewModel.setLipstickColor($0) }))
             sliderPanel(\.lipstick, AdjustmentParameters.intensityRange)
         }
     }
@@ -169,7 +169,7 @@ struct ToolPanel: View {
                 title: { LocalizedStringKey.dynamic("blush." + $0.rawValue) },
                 selected: currentColor,
                 onSelectPreset: { viewModel.setBlushColor($0) },
-                customBinding: colorBinding(current: currentColor, apply: { viewModel.setBlushColor($0) }))
+                customBinding: colorPickerBinding(current: currentColor, apply: { viewModel.setBlushColor($0) }))
             sliderPanel(\.blush, AdjustmentParameters.intensityRange)
         }
     }
@@ -183,7 +183,7 @@ struct ToolPanel: View {
                 title: { LocalizedStringKey.dynamic("eyeshadow." + $0.rawValue) },
                 selected: currentColor,
                 onSelectPreset: { viewModel.setEyeshadowColor($0) },
-                customBinding: colorBinding(current: currentColor, apply: { viewModel.setEyeshadowColor($0) }))
+                customBinding: colorPickerBinding(current: currentColor, apply: { viewModel.setEyeshadowColor($0) }))
             sliderPanel(\.eyeshadow, AdjustmentParameters.intensityRange)
         }
     }
@@ -197,19 +197,9 @@ struct ToolPanel: View {
                 title: { LocalizedStringKey.dynamic("lens." + $0.rawValue) },
                 selected: currentColor,
                 onSelectPreset: { viewModel.setLensColor($0) },
-                customBinding: colorBinding(current: currentColor, apply: { viewModel.setLensColor($0) }))
+                customBinding: colorPickerBinding(current: currentColor, apply: { viewModel.setLensColor($0) }))
             sliderPanel(\.lens, AdjustmentParameters.intensityRange)
         }
-    }
-
-    /// `ColorPresetRow` の「その他の色」用の Binding を作る。どの色選びでも同じ変換をする。
-    private func colorBinding(current: MakeupTint, apply: @escaping (MakeupTint) -> Void) -> Binding<Color> {
-        Binding(
-            get: { Color(red: current.red, green: current.green, blue: current.blue) },
-            set: { color in
-                guard let rgb = color.srgbComponents() else { return }
-                apply(MakeupTint(red: rgb.red, green: rgb.green, blue: rgb.blue))
-            })
     }
 
     private var cutoutPanel: some View {

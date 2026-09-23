@@ -12,11 +12,15 @@ struct TextToolPanel: View {
                 header
                 if let text = viewModel.selectedText {
                     field(text)
-                    ChipStrip(items: TextColor.allCases, selected: text.color,
-                              title: { LocalizedStringKey.dynamic("textColor." + $0.rawValue) },
-                              noneTitle: "", showsNone: false) { color in
-                        if let color { viewModel.updateSelectedText { $0.color = color } }
-                    }
+                    ColorPresetRow(
+                        presets: TextColorPreset.allCases,
+                        tint: { $0.tint },
+                        title: { LocalizedStringKey.dynamic("textColor." + $0.rawValue) },
+                        selected: text.color,
+                        onSelectPreset: { color in viewModel.updateSelectedText { $0.color = color } },
+                        customBinding: colorPickerBinding(current: text.color) { color in
+                            viewModel.updateSelectedText { $0.color = color }
+                        })
                     ChipStrip(items: TextStyle.allCases, selected: text.style,
                               title: { LocalizedStringKey.dynamic("textStyle." + $0.rawValue) },
                               noneTitle: "", showsNone: false,

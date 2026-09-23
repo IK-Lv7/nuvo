@@ -22,7 +22,7 @@ ENUM_KEYS = [
     ("Sources/Core/Rendering/Filters/LUTFilter.swift", "FilterPreset", "filter."),
     ("Sources/Core/PhotoLibrary/ImageWriter.swift", "ExportFormat", "settings.format."),
     ("Sources/Core/Rendering/TextOverlay.swift", "TextStyle", "textStyle."),
-    ("Sources/Core/Rendering/TextOverlay.swift", "TextColor", "textColor."),
+    ("Sources/Core/Rendering/TextOverlay.swift", "TextColorPreset", "textColor."),
     ("Sources/Core/Rendering/CropAspect.swift", "CropAspect", "crop."),
     ("Sources/Core/Rendering/Filters/BackgroundFilter.swift", "BackgroundColor", "background."),
     ("Sources/Core/Rendering/IDPhoto.swift", "IDPhotoSpec", "idPhoto."),

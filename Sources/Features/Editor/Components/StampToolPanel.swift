@@ -16,11 +16,15 @@ struct StampToolPanel: View {
                 if let stamp = viewModel.selectedStamp {
                     // 絵文字画像にはすでに色がついているため、色は SF Symbols のスタンプにだけ効く。
                     if stamp.imageAssetName == nil {
-                        ChipStrip(items: TextColor.allCases, selected: stamp.color,
-                                  title: { LocalizedStringKey.dynamic("textColor." + $0.rawValue) },
-                                  noneTitle: "", showsNone: false) { color in
-                            if let color { viewModel.updateSelectedStamp { $0.color = color } }
-                        }
+                        ColorPresetRow(
+                            presets: TextColorPreset.allCases,
+                            tint: { $0.tint },
+                            title: { LocalizedStringKey.dynamic("textColor." + $0.rawValue) },
+                            selected: stamp.color,
+                            onSelectPreset: { color in viewModel.updateSelectedStamp { $0.color = color } },
+                            customBinding: colorPickerBinding(current: stamp.color) { color in
+                                viewModel.updateSelectedStamp { $0.color = color }
+                            })
                     }
                     TrackSlider(
                         value: Binding(get: { stamp.size },

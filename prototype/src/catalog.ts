@@ -129,8 +129,13 @@ export const cropOptions = [
   { id: 'r3x4', title: '3:4', ratio: 3 / 4 }, { id: 'r9x16', title: '9:16', ratio: 9 / 16 },
   { id: 'r16x9', title: '16:9', ratio: 16 / 9 }, { id: 'r4x3', title: '4:3', ratio: 4 / 3 },
 ];
+/** TextOverlay.swift の TextColorPreset と同じ色見本(近似の16進表記)。実際のアプリでは丸い見本 +
+ * システムのカラーピッカー(ColorPresetRow.swift)で任意の色も選べる。 */
 export const textColors = [
-  { id: '#FFFFFF', title: '白' }, { id: '#000000', title: '黒' }, { id: '#FF8A9E', title: 'ピンク' }, { id: '#FFDB4D', title: '黄' },
+  { id: '#FFFFFF', title: '白' }, { id: '#000000', title: '黒' }, { id: '#8E8E93', title: 'グレー' },
+  { id: '#FF3B30', title: 'レッド' }, { id: '#FF9500', title: 'オレンジ' }, { id: '#FFDB4D', title: '黄' },
+  { id: '#34C759', title: 'グリーン' }, { id: '#00C7BE', title: 'ミント' }, { id: '#0A84FF', title: 'ブルー' },
+  { id: '#AF52DE', title: 'パープル' }, { id: '#FF8A9E', title: 'ピンク' }, { id: '#A2845E', title: 'ブラウン' },
 ];
 /** TextOverlay.swift の TextStyle と同じ書体。すべて端末に入っているフォントで、PostScript 名で呼ぶ。bold が無いものは太字指定で代用する。 */
 export const textStyles = [

@@ -18,6 +18,11 @@ public struct MakeupTint: Codable, Equatable, Hashable, Sendable {
     }
 
     var rgb255: (Float, Float, Float) { (Float(red) * 255, Float(green) * 255, Float(blue) * 255) }
+
+    /// 文字入れ・スタンプの塗りに使う(不透明)。
+    public var cgColor: CGColor {
+        CGColor(red: CGFloat(red), green: CGFloat(green), blue: CGFloat(blue), alpha: 1)
+    }
 }
 
 /// リップに使う色見本。名前は色の系統を表す一般的な言葉で、既存アプリの商品名は使わない。
