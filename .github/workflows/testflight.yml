@@ -88,6 +88,43 @@ jobs:
           }
           echo "KEY_PATH=$RUNNER_TEMP/AuthKey.p8" >> "$GITHUB_ENV"
 
+      - name: Install signing certificate and provisioning profile
+        # CODE_SIGN_STYLE=Automatic はランナーに秘密鍵が無いたびに新しい配布用証明書を作ろうとし、
+        # Apple 側の証明書の上限に達して失敗する(実際に一度これで壊れた)。
+        # 一度だけ作った証明書・プロビジョニングプロファイルを Secrets から読み込んで使い回す。
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.BUILD_CERTIFICATE_PASSWORD }}
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+        run: |
+          for name in BUILD_CERTIFICATE_BASE64 P12_PASSWORD BUILD_PROVISION_PROFILE_BASE64; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Secret for $name is empty."
+              exit 1
+            fi
+          done
+
+          CERTIFICATE_PATH="$RUNNER_TEMP/build_certificate.p12"
+          PP_PATH="$RUNNER_TEMP/build_pp.mobileprovision"
+          KEYCHAIN_PATH="$RUNNER_TEMP/signing.keychain-db"
+          # このキーチェーンはジョブの中だけで使う使い捨てなので、パスワード自体を秘密にする必要はない。
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 24)
+
+          echo "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o "$CERTIFICATE_PATH"
+          echo "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o "$PP_PATH"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed 's/"//g')
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          mkdir -p ~/Library/MobileDevice/"Provisioning Profiles"
+          cp "$PP_PATH" ~/Library/MobileDevice/"Provisioning Profiles"
+
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
+
       - name: Verify App Store Connect API credentials
         # Xcode を通さず同じ認証情報で API を直接呼び、Key ID・Issuer ID・.p8 の組み合わせを検証する。
         # 表示するのは Key ID・Issuer ID の長さと、HTTP ステータス・Apple のエラー文だけ(値は出さない)。
@@ -140,17 +177,17 @@ jobs:
 
       - name: Archive
         # ビルド番号は実行回数で単調増加させる(同じ番号は再アップロードできないため)。
+        # CODE_SIGN_STYLE=Manual + 上のステップで用意した証明書・プロファイルを使う
+        # (Automatic + allowProvisioningUpdates は、その場で証明書を作ろうとして上限に達する)。
         run: >
           xcodebuild archive
           -project Nuvo.xcodeproj -scheme Nuvo
           -destination 'generic/platform=iOS'
           -archivePath "$RUNNER_TEMP/Nuvo.xcarchive"
-          -allowProvisioningUpdates
-          -authenticationKeyPath "$KEY_PATH"
-          -authenticationKeyID "$KEY_ID"
-          -authenticationKeyIssuerID "$ISSUER_ID"
           DEVELOPMENT_TEAM="$TEAM_ID"
-          CODE_SIGN_STYLE=Automatic
+          CODE_SIGN_STYLE=Manual
+          CODE_SIGN_IDENTITY="Apple Distribution"
+          PROVISIONING_PROFILE_SPECIFIER="Nuvo App Store"
           CURRENT_PROJECT_VERSION="${{ github.run_number }}"
 
       - name: Export and upload
@@ -163,7 +200,13 @@ jobs:
               <key>method</key><string>app-store-connect</string>
               <key>destination</key><string>upload</string>
               <key>teamID</key><string>${TEAM_ID}</string>
-              <key>signingStyle</key><string>automatic</string>
+              <key>signingStyle</key><string>manual</string>
+              <key>signingCertificate</key><string>Apple Distribution</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>com.hinodeentertainment.nuvo</key>
+                  <string>Nuvo App Store</string>
+              </dict>
           </dict>
           </plist>
           PLIST
@@ -171,11 +214,16 @@ jobs:
             -archivePath "$RUNNER_TEMP/Nuvo.xcarchive" \
             -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
             -exportPath "$RUNNER_TEMP/export" \
-            -allowProvisioningUpdates \
             -authenticationKeyPath "$KEY_PATH" \
             -authenticationKeyID "$KEY_ID" \
             -authenticationKeyIssuerID "$ISSUER_ID"
 
-      - name: Remove API key
+      - name: Remove signing credentials
         if: always()
-        run: rm -f "$RUNNER_TEMP/AuthKey.p8"
+        # キーチェーン・プロファイル・APIキーはこのジョブの使い捨て(ランナーごと消えるが、念のため明示的に消す)。
+        run: |
+          rm -f "$RUNNER_TEMP/AuthKey.p8"
+          rm -f ~/Library/MobileDevice/"Provisioning Profiles"/*.mobileprovision
+          if [ -n "$KEYCHAIN_PATH" ]; then
+            security delete-keychain "$KEYCHAIN_PATH" || true
+          fi
