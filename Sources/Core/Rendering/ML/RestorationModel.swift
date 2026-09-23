@@ -12,6 +12,9 @@ import Foundation
 /// (`scripts/model_conversion/convert_realesrgan.py` と対応させること。名前が食い違うと
 /// `loadBundled()` が nil を返し、Core Image だけの処理にフォールバックする)。
 public struct RestorationModel {
+    /// 同梱している `.mlpackage` の名前。リソースの検索とキャッシュの名前で共通に使う。
+    static let modelName = "RealESRGANGeneralX4V3"
+
     private let model: MLModel
     private let tileSize: Int
     private let overlap: Int
@@ -49,9 +52,8 @@ public struct RestorationModel {
         // Package.swift の `.copy("Resources/Models")` はフォルダ構造を保ったままコピーするため、
         // バンドル直下ではなく "Models" フォルダの中に入る。ここを省くと永遠に見つからず、
         // 常に Core Image だけのフォールバックになってしまう。
-        Bundle.module.url(forResource: "RealESRGANGeneralX4V3", withExtension: "mlpackage", subdirectory: "Models")
-            ?? Bundle.module.url(forResource: "RealESRGANGeneralX4V3", withExtension: "mlmodelc",
-                                 subdirectory: "Models")
+        Bundle.module.url(forResource: modelName, withExtension: "mlpackage", subdirectory: "Models")
+            ?? Bundle.module.url(forResource: modelName, withExtension: "mlmodelc", subdirectory: "Models")
     }
 
     /// `.mlpackage` は未コンパイルの状態では `MLModel(contentsOf:)` に渡せない
@@ -61,41 +63,69 @@ public struct RestorationModel {
     /// ここで明示的にコンパイルする必要がある(すでに `.mlmodelc` を渡された場合は素通しする)。
     ///
     /// コンパイルは軽くない処理なので、一度コンパイルした結果はアプリのサポートフォルダに
-    /// キャッシュし、次回起動時はそれを再利用する。同梱モデルが更新された(バンドル内の
-    /// 更新日時がキャッシュより新しい)場合は、古いキャッシュを使わず再コンパイルする。
+    /// キャッシュし、次回起動時はそれを再利用する。
+    ///
+    /// キャッシュの名前には**モデルの中身から作った指紋**を入れる。同梱モデルを差し替えると
+    /// 名前ごと変わるため、古いキャッシュに当たること自体が起こらない。
+    /// (以前は更新日時を比べていた。しかしバンドル内のファイルの日時は、ビルドや配布の経路で
+    ///  古いまま引き継がれることがあり、アプリを更新しても「キャッシュのほうが新しい」と
+    ///  判定されうる。実際それで、直したモデルを同梱しても壊れた古いモデルが使われ続けた。)
     private static func compiledModelURL(for url: URL) -> URL? {
         guard url.pathExtension == "mlpackage" else { return url }
-
-        if let cacheURL = cachedCompiledModelURL(), isCache(cacheURL, upToDateWith: url) {
-            return cacheURL
+        guard let fingerprint = fingerprint(of: url), let directory = cacheDirectory() else {
+            // 指紋が作れない場合は、古いものを使う危険を冒さず毎回コンパイルする。
+            return try? MLModel.compileModel(at: url)
         }
+        let cacheURL = directory.appendingPathComponent("\(modelName)-\(fingerprint).mlmodelc")
+        if FileManager.default.fileExists(atPath: cacheURL.path) { return cacheURL }
+
         guard let compiled = try? MLModel.compileModel(at: url) else { return nil }
-        guard let cacheURL = cachedCompiledModelURL() else { return compiled }
-
         let fileManager = FileManager.default
-        try? fileManager.createDirectory(at: cacheURL.deletingLastPathComponent(),
-                                         withIntermediateDirectories: true)
-        try? fileManager.removeItem(at: cacheURL)
-        if (try? fileManager.copyItem(at: compiled, to: cacheURL)) != nil {
-            return cacheURL
+        try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        // 指紋が変わった = 前のモデルのキャッシュはもう使わないので、ここで捨てる。
+        for stale in (try? fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
+        where stale.pathExtension == "mlmodelc" && stale.lastPathComponent != cacheURL.lastPathComponent {
+            try? fileManager.removeItem(at: stale)
         }
+        if (try? fileManager.copyItem(at: compiled, to: cacheURL)) != nil { return cacheURL }
         // キャッシュへのコピーに失敗しても、コンパイル自体は成功しているのでそのまま使う。
         return compiled
     }
 
-    private static func cachedCompiledModelURL() -> URL? {
-        guard let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-        else { return nil }
-        return base.appendingPathComponent("CoreMLModels/RealESRGANGeneralX4V3.mlmodelc")
+    private static func cacheDirectory() -> URL? {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
+            .appendingPathComponent("CoreMLModels")
     }
 
-    private static func isCache(_ cacheURL: URL, upToDateWith sourceURL: URL) -> Bool {
+    /// 同梱モデルの中身(`.mlpackage` 内の全ファイル)から作る短い指紋。
+    /// 数 MB を読むことになるが、起動時に一度だけなので実用上の負担にはならない。
+    static func fingerprint(of packageURL: URL) -> String? {
         let fileManager = FileManager.default
-        guard fileManager.fileExists(atPath: cacheURL.path),
-              let cacheDate = try? fileManager.attributesOfItem(atPath: cacheURL.path)[.modificationDate] as? Date,
-              let sourceDate = try? fileManager.attributesOfItem(atPath: sourceURL.path)[.modificationDate] as? Date
-        else { return false }
-        return cacheDate >= sourceDate
+        guard let entries = fileManager.enumerator(at: packageURL, includingPropertiesForKeys: nil)?
+            .compactMap({ $0 as? URL }).sorted(by: { $0.path < $1.path }), !entries.isEmpty else { return nil }
+
+        // FNV-1a(64bit)。暗号用途ではなく「モデルが差し替わったか」を見るだけなので、
+        // 衝突耐性より、外部モジュールを増やさずに済むことを優先する(AGENTS.md 第2章)。
+        var hash: UInt64 = 0xcbf2_9ce4_8422_2325
+        func mix(_ bytes: UnsafeRawBufferPointer) {
+            for byte in bytes {
+                hash ^= UInt64(byte)
+                hash = hash &* 0x0000_0100_0000_01b3
+            }
+        }
+
+        var hashedAnyFile = false
+        for entry in entries {
+            // ディレクトリは読み込みに失敗するだけなので、そのまま読み飛ばす。
+            guard let data = try? Data(contentsOf: entry, options: .mappedIfSafe) else { continue }
+            // 引数の型を明示するのは、Data.withUnsafeBytes の古い(非推奨の)多重定義と
+            // 取り違えられないようにするため。
+            Data(entry.lastPathComponent.utf8).withUnsafeBytes { (raw: UnsafeRawBufferPointer) in mix(raw) }
+            data.withUnsafeBytes { (raw: UnsafeRawBufferPointer) in mix(raw) }
+            hashedAnyFile = true
+        }
+        guard hashedAnyFile else { return nil }
+        return String(hash, radix: 16)
     }
 
     /// `image` を `outputScale` 倍に拡大しながら、モデルで復元する。
@@ -139,7 +169,9 @@ public struct RestorationModel {
     }
 
     /// 1枚のタイル(`tileSize` 四方)をモデルに通し、`outputScale` 倍のタイルを得る。
-    private func upscale(_ tile: CGImage, context: CIContext) -> CGImage? {
+    /// `internal` にしてあるのは、テストから「モデル単体の出力」と「タイルを合成した結果」を
+    /// 切り分けて測れるようにするため(`bundledPackageURL()` と同じ理由)。
+    func upscale(_ tile: CGImage, context: CIContext) -> CGImage? {
         guard let input = try? MLFeatureValue(cgImage: tile, constraint: inputConstraint, options: nil),
               let features = try? MLDictionaryFeatureProvider(dictionary: ["tile": input]),
               let result = try? model.prediction(from: features),
@@ -188,7 +220,8 @@ public struct RestorationModel {
 
     /// 0〜255 の平均輝度。`BitmapIO.rgba` はアルファ済み乗算で描くため、
     /// 全面が透明なタイルもここでは 0 になり、同じ判定で拾える。
-    private static func meanLuminance(of image: CGImage) -> Double? {
+    /// `internal` にしてあるのは、テストが同じ尺度で出力を測れるようにするため。
+    static func meanLuminance(of image: CGImage) -> Double? {
         guard let rgba = BitmapIO.rgba(from: image), !rgba.isEmpty else { return nil }
         var total = 0.0
         for index in stride(from: 0, to: rgba.count, by: 4) {
