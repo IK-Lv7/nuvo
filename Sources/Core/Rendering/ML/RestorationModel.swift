@@ -110,9 +110,18 @@ public struct RestorationModel {
         var canvas = CIImage(color: CIColor(red: 0, green: 0, blue: 0, alpha: 0))
             .cropped(to: CGRect(origin: .zero, size: outputSize))
 
+        var isVerified = false
         for tile in tiles {
             guard let sourcePatch = BitmapIO.crop(image, topLeftRect: tile.sourceRect, context: context),
                   let upscaledPatch = upscale(sourcePatch, context: context) else { return nil }
+
+            // 最初の1枚だけ、モデルの出力が壊れていないか(ほぼ真っ黒になっていないか)を確かめる。
+            // 壊れていれば全体を諦めて nil を返し、Core Image だけの拡大にフォールバックさせる。
+            // 真っ黒な写真を書き出してしまうより、精細さを諦めるほうがましなため。
+            if !isVerified {
+                guard Self.looksPlausible(source: sourcePatch, upscaled: upscaledPatch) else { return nil }
+                isVerified = true
+            }
 
             // keepRect を、切り出したタイル(source)基準の相対位置に直し、拡大率をかける。
             let keepInSource = CGRect(x: tile.keepRect.minX - tile.sourceRect.minX,
@@ -135,7 +144,56 @@ public struct RestorationModel {
               let features = try? MLDictionaryFeatureProvider(dictionary: ["tile": input]),
               let result = try? model.prediction(from: features),
               let buffer = result.featureValue(for: "upscaledTile")?.imageBufferValue else { return nil }
-        let outputImage = CIImage(cvPixelBuffer: buffer)
-        return context.createCGImage(outputImage, from: outputImage.extent)
+        return Self.opaqueImage(from: buffer) ?? Self.imageIgnoringAlpha(from: buffer, context: context)
+    }
+
+    /// Core ML の画像出力(`CVPixelBuffer`)を、アルファを読まずに `CGImage` にする。
+    ///
+    /// 出力の画素形式は 32BGRA だが、モデルが書き込むのは RGB の3チャンネルだけで、
+    /// アルファのバイトは 0 のまま返ることがある。これを `CIImage(cvPixelBuffer:)` で読むと
+    /// 「アルファ済み乗算の、完全に透明なピクセル」と解釈され、タイルを重ねた結果も全面透明になる。
+    /// 透明な画像を JPEG / HEIC に書き出すと透明部分が黒で埋まるため、写真全体が真っ黒になる
+    /// (編集画面の背景も暗いため、プレビューでも黒く見える)。
+    /// ここでは `noneSkipFirst` を指定してアルファのバイトを無視し、この解釈そのものを避ける。
+    private static func opaqueImage(from buffer: CVPixelBuffer) -> CGImage? {
+        guard CVPixelBufferGetPixelFormatType(buffer) == kCVPixelFormatType_32BGRA,
+              let space = CGColorSpace(name: CGColorSpace.sRGB) else { return nil }
+        CVPixelBufferLockBaseAddress(buffer, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(buffer, .readOnly) }
+        guard let base = CVPixelBufferGetBaseAddress(buffer),
+              let bitmap = CGContext(
+                data: base, width: CVPixelBufferGetWidth(buffer), height: CVPixelBufferGetHeight(buffer),
+                bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(buffer), space: space,
+                bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue)
+        else { return nil }
+        // makeImage() は画素をコピーするため、この後ロックを解いても安全。
+        return bitmap.makeImage()
+    }
+
+    /// 32BGRA 以外の形式で返ってきた場合の保険。Core Image 経由で読み、アルファは 1 に上書きする。
+    private static func imageIgnoringAlpha(from buffer: CVPixelBuffer, context: CIContext) -> CGImage? {
+        let image = CIImage(cvPixelBuffer: buffer)
+        return context.createCGImage(image.settingAlphaOne(in: image.extent), from: image.extent)
+    }
+
+    /// モデルの出力が「大きさは正しいが中身がほぼ真っ黒」になっていないかを、明るさで確かめる。
+    /// 出力レンジ(0〜1 と 0〜255)やアルファの扱いを取り違えると、この形で壊れる。
+    /// 元のタイル自体が暗い(夜景など)場合は判定材料にならないので、そのまま通す。
+    private static func looksPlausible(source: CGImage, upscaled: CGImage) -> Bool {
+        guard let sourceMean = meanLuminance(of: source), sourceMean > 16,
+              let upscaledMean = meanLuminance(of: upscaled) else { return true }
+        // 復元で明るさが多少変わるのは正常なため、しきい値は「明らかに黒い」側に大きく振る。
+        return upscaledMean > sourceMean * 0.25
+    }
+
+    /// 0〜255 の平均輝度。`BitmapIO.rgba` はアルファ済み乗算で描くため、
+    /// 全面が透明なタイルもここでは 0 になり、同じ判定で拾える。
+    private static func meanLuminance(of image: CGImage) -> Double? {
+        guard let rgba = BitmapIO.rgba(from: image), !rgba.isEmpty else { return nil }
+        var total = 0.0
+        for index in stride(from: 0, to: rgba.count, by: 4) {
+            total += 0.299 * Double(rgba[index]) + 0.587 * Double(rgba[index + 1]) + 0.114 * Double(rgba[index + 2])
+        }
+        return total / Double(rgba.count / 4)
     }
 }

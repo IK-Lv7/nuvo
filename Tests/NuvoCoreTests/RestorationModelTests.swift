@@ -33,10 +33,32 @@ final class RestorationModelTests: XCTestCase {
         let context = CIContext()
 
         let output = model.apply(to: CIImage(cgImage: cgImage), context: context)
-        let result = try XCTUnwrap(output, "モデルが読み込めているのに処理結果が nil だった")
+        let result = try XCTUnwrap(output, """
+            モデルが読み込めているのに処理結果が nil だった \
+            (出力が真っ黒で、RestorationModel の安全弁が働いた可能性がある)
+            """)
 
         // このモデルは 4 倍に拡大する(RestorationModel.loadBundled の outputScale と合わせる)。
         XCTAssertEqual(result.extent.width, CGFloat(size * 4), accuracy: 0.5)
         XCTAssertEqual(result.extent.height, CGFloat(size * 4), accuracy: 0.5)
+
+        // 中身の確認。大きさだけを見ていると、モデルの出力レンジ(0〜1 と 0〜255)や
+        // アルファの取り違えで「大きさは正しいが真っ黒・全面透明」になる不具合を見逃す
+        // (実際にこの形で、高画質化した写真が真っ黒になる不具合が2度起きている)。
+        let rendered = try XCTUnwrap(context.createCGImage(result, from: result.extent))
+        let outputRGBA = try XCTUnwrap(BitmapIO.rgba(from: rendered))
+        let mean = meanLuminance(of: outputRGBA)
+        // 入力(120, 90, 70)の平均輝度は約 97。復元で多少変わるため、下限だけを緩く見る。
+        XCTAssertGreaterThan(mean, 40, "高画質化の出力がほぼ真っ黒(平均輝度 \(mean))")
+    }
+
+    /// 0〜255 の平均輝度。`BitmapIO.rgba` はアルファ済み乗算で描くため、全面が透明な結果も 0 になる。
+    private func meanLuminance(of rgba: [UInt8]) -> Double {
+        guard !rgba.isEmpty else { return 0 }
+        var total = 0.0
+        for index in stride(from: 0, to: rgba.count, by: 4) {
+            total += 0.299 * Double(rgba[index]) + 0.587 * Double(rgba[index + 1]) + 0.114 * Double(rgba[index + 2])
+        }
+        return total / Double(rgba.count / 4)
     }
 }
