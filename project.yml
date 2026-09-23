@@ -40,3 +40,9 @@ targets:
         INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription: 加工した写真を保存するために使用します。写真が端末の外に送信されることはありません。
         # 標準の暗号化のみ使用(独自暗号なし)。申告を不要にする。
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        # 署名はこのアプリ本体のターゲットにだけ設定する。xcodebuild のコマンドライン引数として
+        # 渡すと、Swift Package のリソースバンドル用ターゲット(署名を必要としない)にまで
+        # 強制適用されてエラーになるため、ここ(ターゲット単位の設定)に置く。
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "Apple Distribution"
+        PROVISIONING_PROFILE_SPECIFIER: "Nuvo App Store"
