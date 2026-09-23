@@ -147,6 +147,14 @@ export const textStyles = [
   { id: 'condensed', title: 'コンデンス', regular: 'Futura-CondensedMedium', bold: 'Futura-CondensedExtraBold' },
   { id: 'didot', title: 'ディド', regular: 'Didot', bold: 'Didot-Bold' },
   { id: 'typewriter', title: 'タイプライター', regular: 'AmericanTypewriter', bold: 'AmericanTypewriter-Bold' },
+  { id: 'avenir', title: 'アヴニール', regular: 'Avenir-Book', bold: 'Avenir-Heavy' },
+  { id: 'baskerville', title: 'バスカヴィル', regular: 'Baskerville', bold: 'Baskerville-Bold' },
+  { id: 'copperplate', title: 'カッパープレート', regular: 'Copperplate', bold: 'Copperplate-Bold' },
+  { id: 'chalkboard', title: 'チョーク', regular: 'ChalkboardSE-Regular', bold: 'ChalkboardSE-Bold' },
+  { id: 'papyrus', title: 'パピルス', regular: 'Papyrus' },
+  { id: 'zapfino', title: '飾り文字', regular: 'Zapfino' },
+  { id: 'optima', title: 'オプティマ', regular: 'Optima-Regular', bold: 'Optima-Bold' },
+  { id: 'bradleyHand', title: 'ポップ', regular: 'BradleyHandITCTT-Bold' },
 ] as { id: string; title: string; regular?: string; bold?: string }[];
 
 export const exportFormats = [

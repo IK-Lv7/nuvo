@@ -7,6 +7,7 @@ public enum TextStyle: String, CaseIterable, Sendable, Codable {
     case standard, serif, rounded, mono
     case gothic, mincho, maru
     case script, handwriting, marker, condensed, didot, typewriter
+    case avenir, baskerville, copperplate, chalkboard, papyrus, zapfino, optima, bradleyHand
 
     /// PostScript 名(通常・太字)。nil はシステムフォント。太字の専用フォントが無いものは bold が nil で、
     /// 描画時に太字のトレイトを付ける。
@@ -25,6 +26,18 @@ public enum TextStyle: String, CaseIterable, Sendable, Codable {
         case .condensed: ("Futura-CondensedMedium", "Futura-CondensedExtraBold")
         case .didot: ("Didot", "Didot-Bold")
         case .typewriter: ("AmericanTypewriter", "AmericanTypewriter-Bold")
+        // Avenir に "Bold" という名前の書体は無く、"Heavy" が太字に相当する。
+        case .avenir: ("Avenir-Book", "Avenir-Heavy")
+        case .baskerville: ("Baskerville", "Baskerville-Bold")
+        case .copperplate: ("Copperplate", "Copperplate-Bold")
+        case .chalkboard: ("ChalkboardSE-Regular", "ChalkboardSE-Bold")
+        // Papyrus・Zapfino は太字の書体が存在しない(太字トグルは通常のトレイト付けにフォールバックする)。
+        case .papyrus: ("Papyrus", nil)
+        case .zapfino: ("Zapfino", nil)
+        case .optima: ("Optima-Regular", "Optima-Bold")
+        // Bradley Hand は端末に1書体しか無く、その唯一の書体の名前に "Bold" が含まれている
+        // (太字にしても見た目は変わらない)。
+        case .bradleyHand: ("BradleyHandITCTT-Bold", nil)
         }
     }
 

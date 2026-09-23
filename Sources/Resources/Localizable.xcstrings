@@ -3665,6 +3665,70 @@
         }
       }
     },
+    "textStyle.avenir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avenir"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アヴニール"
+          }
+        }
+      }
+    },
+    "textStyle.baskerville": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baskerville"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "バスカヴィル"
+          }
+        }
+      }
+    },
+    "textStyle.bradleyHand": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bradley Hand"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ポップ"
+          }
+        }
+      }
+    },
+    "textStyle.chalkboard": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chalkboard"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "チョーク"
+          }
+        }
+      }
+    },
     "textStyle.condensed": {
       "localizations": {
         "en": {
@@ -3677,6 +3741,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "コンデンス"
+          }
+        }
+      }
+    },
+    "textStyle.copperplate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copperplate"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "カッパープレート"
           }
         }
       }
@@ -3793,6 +3873,38 @@
         }
       }
     },
+    "textStyle.optima": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Optima"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オプティマ"
+          }
+        }
+      }
+    },
+    "textStyle.papyrus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Papyrus"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "パピルス"
+          }
+        }
+      }
+    },
     "textStyle.rounded": {
       "localizations": {
         "en": {
@@ -3869,6 +3981,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "タイプライター"
+          }
+        }
+      }
+    },
+    "textStyle.zapfino": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zapfino"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "飾り文字"
           }
         }
       }
