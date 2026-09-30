@@ -1313,38 +1313,6 @@
         }
       }
     },
-    "editor.idPhoto": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ID photo"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "証明写真"
-          }
-        }
-      }
-    },
-    "editor.idPhotoIssue": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This photo cannot fit the ID photo layout. Use a photo with the whole head and some space around it."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "この写真では規格の余白が取れません。頭全体が写り、周囲に余白のある写真を使ってください。"
-          }
-        }
-      }
-    },
     "editor.lipstick": {
       "localizations": {
         "en": {
@@ -2461,54 +2429,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "解像度を2倍にし、輪郭をシャープにします。書き出しに時間がかかり、ファイルも大きくなります。"
-          }
-        }
-      }
-    },
-    "idPhoto.none": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Off"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "なし"
-          }
-        }
-      }
-    },
-    "idPhoto.passport": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Passport / My Number 35×45"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "パスポート・マイナンバー 35×45"
-          }
-        }
-      }
-    },
-    "idPhoto.resume": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Resume 30×40"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "履歴書 30×40"
           }
         }
       }
@@ -4477,22 +4397,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "ハイライト"
-          }
-        }
-      }
-    },
-    "tool.idPhoto": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ID photo"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "証明写真"
           }
         }
       }

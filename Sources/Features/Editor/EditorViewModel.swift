@@ -33,8 +33,6 @@ final class EditorViewModel {
     private(set) var imageRevision = 0
     /// 自動検出で見つかった件数。まだ実行していなければ nil。
     private(set) var autoHealCount: Int?
-    /// 証明写真の規格に収まらない(顔が見つからない・余白が足りない)とき true。
-    private(set) var idPhotoUnavailable = false
     /// 人物の切り抜きができているか。背景の効果はこれが true のときだけ効く。
     private(set) var hasSubjectMask = false
     /// ポートレート写真の深度が使えるか。使えると、背景のぼかしが奥行きに沿う。
@@ -71,7 +69,7 @@ final class EditorViewModel {
     var hasComposition: Bool {
         let p = parameters
         return p.rotationQuarterTurns != 0 || p.flipHorizontal || p.straighten != 0 || p.cropAspect != nil
-            || p.cropZoom != 1 || p.idPhoto != nil
+            || p.cropZoom != 1
     }
 
     var selectedText: TextOverlay? {
@@ -111,7 +109,6 @@ final class EditorViewModel {
         hasSubjectMask = false
         hasDepthMask = false
         autoHealCount = nil
-        idPhotoUnavailable = false
         imageRevision += 1
         scheduleRender()
         return preview
@@ -137,7 +134,6 @@ final class EditorViewModel {
         change(&parameters)
         scheduleRender()
         commitEdit()
-        refreshIDPhotoAvailability()
     }
 
     func setFilter(_ preset: FilterPreset?) {
@@ -169,14 +165,6 @@ final class EditorViewModel {
     /// カラコンの色を選ぶ。nil を渡すと既定の色に戻る。
     func setLensColor(_ tint: MakeupTint?) {
         update { $0.lensColor = tint }
-    }
-
-    /// 証明写真を選ぶ。背景が無地でなければ、規格で一般的な白にする。
-    func setIDPhoto(_ spec: IDPhotoSpec?) {
-        update {
-            $0.idPhoto = spec
-            if spec != nil, $0.backgroundColor == nil { $0.backgroundColor = .white }
-        }
     }
 
     /// 保存したルックを当てる。この写真の修復位置・構図・文字は保つ。
@@ -265,14 +253,12 @@ final class EditorViewModel {
         history.undo()
         parameters = history.current
         scheduleRender()
-        refreshIDPhotoAvailability()
     }
 
     func redo() {
         history.redo()
         parameters = history.current
         scheduleRender()
-        refreshIDPhotoAvailability()
     }
 
     func dismissSaveResult() {
@@ -393,15 +379,6 @@ final class EditorViewModel {
         maskOverlayImage = result.2
         previewSource = result.1
         scheduleRender()
-        refreshIDPhotoAvailability()
-    }
-
-    private func refreshIDPhotoAvailability() {
-        guard let spec = parameters.idPhoto else {
-            idPhotoUnavailable = false
-            return
-        }
-        idPhotoUnavailable = previewSource?.idPhotoCropRect(spec, unselectedFaces: parameters.excludedFaces) == nil
     }
 
     /// 連続操作では前のレンダリングを捨て、最新のパラメータだけを描画する。

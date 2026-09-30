@@ -50,8 +50,8 @@ Lipstick, blush, brows, and teeth whitening that stay put on your face and keep 
 **Eyes**
 Eyeliner, fuller lashes, eyeshadow, tinted lenses, and a soft under-eye highlight — all following your own eye shape. Lashes are darkened where your lashes already are, so nothing looks drawn on, and the lens tint keeps the texture of your iris.
 
-**Backgrounds and ID photos**
-Blur or replace the background. Portrait Mode photos use their built-in depth data for a more natural blur. If the automatic cutout misses a spot, fix it with an adjustable pen: paint to add or erase from the person. Make an ID photo with one tap: 35 × 45 mm (passport / My Number card) or 30 × 40 mm (résumé).\*
+**Backgrounds**
+Blur or replace the background. Portrait Mode photos use their built-in depth data for a more natural blur. If the automatic cutout misses a spot, fix it with an adjustable pen: paint to add or erase from the person.
 
 **Composition, text, and filters**
 Crop, rotate, straighten, and zoom in. Add text in a range of typefaces, or a stamp — Apple's own icon set, plus a handful of colorful heart and sparkle stickers. Choose from 18 filters, then add film grain or a soft light leak.
@@ -61,8 +61,6 @@ Save your favorite settings as a *Look* and apply it to any photo — or to many
 
 **Export your way**
 Save as JPEG, HEIC, or PNG at the quality you want. Location data can be removed from exported photos (on by default). Your original photo is never changed.
-
-<sub>\* The ID photo layouts follow the published guidelines for Japanese passport and My Number card photos. Always check the requirements of wherever you submit the photo.</sub>
 
 **Enhance quality**
 Double the resolution and sharpen the result with a single tap — no AI model, no upload, just Core Image running on your phone.

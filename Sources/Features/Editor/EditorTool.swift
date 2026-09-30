@@ -6,7 +6,6 @@ enum EditorToolKind {
     case slider(WritableKeyPath<AdjustmentParameters, Double>, ClosedRange<Double>)
     case filters
     case backgroundColor
-    case idPhoto
     case blemish
     case autoEnhance
     case orientation
@@ -52,7 +51,6 @@ struct EditorTool: Identifiable {
         case .slider(let keyPath, _): p[keyPath: keyPath] != AdjustmentParameters()[keyPath: keyPath]
         case .filters: p.filter != nil
         case .backgroundColor: p.backgroundColor != nil
-        case .idPhoto: p.idPhoto != nil
         case .blemish: !p.spots.isEmpty
         case .autoEnhance: p.autoEnhance
         case .orientation: p.rotationQuarterTurns != 0 || p.flipHorizontal
@@ -121,7 +119,6 @@ enum EditorCatalog {
             EditorTool(id: "backgroundBlur", icon: "aperture", kind: .slider(\.backgroundBlur, intensity)),
             EditorTool(id: "backgroundColor", icon: "paintpalette", kind: .backgroundColor),
             EditorTool(id: "backgroundCutout", icon: "paintbrush.pointed.fill", kind: .cutout),
-            EditorTool(id: "idPhoto", icon: "person.text.rectangle", kind: .idPhoto),
         ]),
         ToolCategory(id: "crop", icon: "crop", tools: [
             EditorTool(id: "orientation", icon: "rotate.right", kind: .orientation),

@@ -1,7 +1,7 @@
 import CoreImage
 import CoreImage.CIFilterBuiltins
 
-/// 背景の単色。証明写真で一般的な色から選ぶ(初期値。実機で見て調整する)。
+/// 背景の単色。人物が引き立つ、落ち着いた色から選ぶ(初期値。実機で見て調整する)。
 public enum BackgroundColor: String, CaseIterable, Sendable, Codable {
     case white, lightBlue, lightGray
 

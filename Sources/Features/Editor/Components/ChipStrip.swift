@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 横に並べた選択肢。先頭の「なし」で解除する(フィルター・背景色・証明写真で共通)。
+/// 横に並べた選択肢。先頭の「なし」で解除する(フィルター・背景色などで共通)。
 struct ChipStrip<Item: Hashable>: View {
     let items: [Item]
     let selected: Item?
