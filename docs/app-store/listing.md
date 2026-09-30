@@ -1,13 +1,16 @@
 # App Store 掲載用の文言(たたき台)
 
 App Store Connect に貼るための下書き。文字数の上限は Apple の規定。数字は貼る前に実機で確認する。
+
+**価格への言及は説明文だけに書く。** アプリ名・サブタイトル・キーワード・プロモーションテキスト・スクリーンショットに
+「無料」「Free」「サブスクなし」などを入れると、ガイドライン 2.3.7 でリジェクトされる(1.0 (25) で実際に指摘された)。
 このファイルは公開リポジトリに置くため、個人情報・Team ID は書かない。連絡先は組織用のメールアドレスだけを載せる。
 
 ## 共通
 
 | 項目 | 値 |
 |---|---|
-| アプリ名 | Nuvo: Free Photo Editor(23 文字 / 上限 30) |
+| アプリ名 | Nuvo: Offline Photo Editor(26 文字 / 上限 30) |
 | カテゴリ | 写真/ビデオ |
 | 価格 | 無料(アプリ内課金なし) |
 | プライバシーポリシー URL | 公開後の URL を入れる(下の「公開手順」) |
@@ -20,10 +23,10 @@ App Store Connect に貼るための下書き。文字数の上限は Apple の�
 ## 日本語
 
 **サブタイトル**(上限 30)
-`全機能無料・透かしなし・通信なし`
+`透かしなし・広告なし・完全オフライン`
 
 **プロモーションテキスト**(上限 170)
-`すべての機能が、最初から無料です。サブスクも透かしも広告もありません。写真はスマホの外に出ません。`
+`写真はスマホの外に出ません。インターネットに接続せず、アカウント登録も不要。透かしも広告もなく、どの機能も最初の1タップから使えます。`
 
 **説明文**
 ```
@@ -46,7 +49,6 @@ Nuvo は、ポートレートを「いちばん調子のいい日の自分」に
 ・メイク: リップ、チーク、アイブロウ、歯のホワイトニング
 ・集合写真: 複数人が写っているとき、加工する人を選べます(タップ、または指で囲む)
 ・背景: ぼかす、単色にする。ポートレートモードの写真は奥行き情報も使います
-・証明写真: 35×45mm、30×40mm をワンタップで
 ・構図: トリミング、回転、傾き補正、ズーム
 ・文字入れ: いろいろな書体
 ・フィルター18種、フィルムの粒子、光漏れ
@@ -55,12 +57,10 @@ Nuvo は、ポートレートを「いちばん調子のいい日の自分」に
 
 ■ やりすぎない
 どの効果にも自然さの上限があるので、最大にしても「のっぺり」しません。長押しで、いつでも元の写真と見比べられます。
-
-※ 証明写真は、日本のパスポート・マイナンバーカードの公開されている規格に沿っています。提出先の要件は、必ずご自身でご確認ください。
 ```
 
 **キーワード**(上限 100、カンマ区切り・空白なし)
-`写真加工,美肌,美顔,証明写真,フィルター,背景ぼかし,無料,透かしなし,オフライン,レタッチ,補正,トリミング`
+`写真加工,美肌,美顔,メイク,フィルター,背景ぼかし,透かしなし,オフライン,プライバシー,レタッチ,補正,トリミング`
 
 **このバージョンの新機能**
 `はじめてのリリースです。`
@@ -68,10 +68,10 @@ Nuvo は、ポートレートを「いちばん調子のいい日の自分」に
 ## English
 
 **Subtitle**(max 30)
-`Free. No watermark. Offline.`
+`No watermark. Fully offline.`
 
 **Promotional text**(max 170)
-`Every feature is free from the first tap. No subscription, no watermark, no ads. Your photos never leave your phone.`
+`Your photos never leave your phone. No internet connection, no account, no watermark, no ads. Every tool is ready from your very first tap.`
 
 **Description**
 ```
@@ -94,7 +94,6 @@ WHAT YOU CAN DO
 - Makeup: lipstick, blush, brows, teeth whitening
 - Group photos: choose whose face to edit (tap, or draw a circle)
 - Background: blur or replace it. Portrait Mode photos use their depth data
-- ID photos: 35 x 45 mm and 30 x 40 mm in one tap
 - Composition: crop, rotate, straighten, zoom
 - Add text in a range of typefaces
 - 18 filters, film grain, light leak
@@ -103,12 +102,10 @@ WHAT YOU CAN DO
 
 MADE TO LOOK LIKE YOU
 Every effect has a built-in natural limit, so even the maximum setting doesn't look plastic. Press and hold to compare with your original at any time.
-
-The ID photo layouts follow the published guidelines for Japanese passport and My Number card photos. Always check the requirements of wherever you submit the photo.
 ```
 
 **Keywords**(max 100)
-`photo editor,retouch,beautify,portrait,id photo,filters,blur background,free,no watermark,offline`
+`photo editor,retouch,beautify,portrait,makeup,filters,blur background,no watermark,offline,privacy`
 
 **What's New**
 `First release.`
