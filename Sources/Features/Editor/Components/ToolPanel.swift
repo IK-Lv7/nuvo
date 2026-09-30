@@ -18,8 +18,6 @@ struct ToolPanel: View {
             filterPanel
         case .backgroundColor:
             backgroundPanel
-        case .idPhoto:
-            idPhotoPanel
         case .blemish:
             blemishPanel
         case .autoEnhance:
@@ -106,17 +104,6 @@ struct ToolPanel: View {
             ChipStrip(items: BackgroundColor.allCases, selected: viewModel.parameters.backgroundColor,
                       title: { LocalizedStringKey.dynamic("background." + $0.rawValue) },
                       noneTitle: "background.none") { color in viewModel.update { $0.backgroundColor = color } }
-        }
-    }
-
-    private var idPhotoPanel: some View {
-        VStack(spacing: 8) {
-            ChipStrip(items: IDPhotoSpec.allCases, selected: viewModel.parameters.idPhoto,
-                      title: { LocalizedStringKey.dynamic("idPhoto." + $0.rawValue) },
-                      noneTitle: "idPhoto.none") { viewModel.setIDPhoto($0) }
-            if viewModel.idPhotoUnavailable {
-                Text("editor.idPhotoIssue").font(.footnote).foregroundStyle(.orange)
-            }
         }
     }
 

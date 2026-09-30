@@ -12,7 +12,6 @@ export type Params = {
   filter: string | null;
   filterIntensity: number;
   bgColor: string | null;
-  idPhoto: string | null;
   autoEnhance: boolean;
   spots: number;
   /** 時計回りに 90° の回数(0...3)。 */
@@ -29,7 +28,7 @@ export type Params = {
 };
 
 export const initialParams: Params = {
-  values: {}, filter: null, filterIntensity: 1, bgColor: null, idPhoto: null, autoEnhance: false, spots: 0,
+  values: {}, filter: null, filterIntensity: 1, bgColor: null, autoEnhance: false, spots: 0,
   rotation: 0, flip: false, cropAspect: null, cropCenter: { x: 0.5, y: 0.5 }, texts: [], unselected: [], lipstickColor: null,
 };
 
@@ -38,7 +37,6 @@ export function isModified(tool: Tool, p: Params): boolean {
     case 'slider': return (p.values[tool.id] ?? sliderDefault(tool.kind)) !== sliderDefault(tool.kind);
     case 'filters': return p.filter !== null;
     case 'backgroundColor': return p.bgColor !== null;
-    case 'idPhoto': return p.idPhoto !== null;
     case 'blemish': return p.spots > 0;
     case 'autoEnhance': return p.autoEnhance;
     case 'orientation': return p.rotation !== 0 || p.flip;
@@ -96,23 +94,23 @@ export function useEditorState() {
 /** 構図を変えているか。変えている間は、タップでの修復位置が最終画像の座標とずれるため使えない。 */
 export function hasComposition(p: Params): boolean {
   return p.rotation !== 0 || p.flip || (p.values.straighten ?? 0) !== 0 || p.cropAspect !== null
-    || (p.values.cropZoom ?? 1) !== 1 || p.idPhoto !== null;
+    || (p.values.cropZoom ?? 1) !== 1;
 }
 
-/** ルックとして保存する範囲。写真ごとの内容(修復・構図・文字・証明写真・加工する人)は含めない(AdjustmentParameters.lookOnly と同じ)。 */
+/** ルックとして保存する範囲。写真ごとの内容(修復・構図・文字・加工する人)は含めない(AdjustmentParameters.lookOnly と同じ)。 */
 export function lookOf(p: Params): Params {
   const { straighten: _straighten, cropZoom: _cropZoom, ...values } = p.values;
-  return { ...p, values, spots: 0, texts: [], rotation: 0, flip: false, cropAspect: null, cropCenter: { x: 0.5, y: 0.5 }, idPhoto: null, unselected: [] }; // lipstickColor はスタイルなので残す(look に含める)
+  return { ...p, values, spots: 0, texts: [], rotation: 0, flip: false, cropAspect: null, cropCenter: { x: 0.5, y: 0.5 }, unselected: [] }; // lipstickColor はスタイルなので残す(look に含める)
 }
 
-/** ルックを当てる。この写真の修復・構図・文字・証明写真は保つ(AdjustmentParameters.applyingLook と同じ)。 */
+/** ルックを当てる。この写真の修復・構図・文字は保つ(AdjustmentParameters.applyingLook と同じ)。 */
 export function applyingLook(current: Params, look: Params): Params {
   const values = { ...look.values };
   if (current.values.straighten !== undefined) values.straighten = current.values.straighten;
   if (current.values.cropZoom !== undefined) values.cropZoom = current.values.cropZoom;
   return {
     ...look, values, spots: current.spots, texts: current.texts, rotation: current.rotation,
-    flip: current.flip, cropAspect: current.cropAspect, cropCenter: current.cropCenter, idPhoto: current.idPhoto,
+    flip: current.flip, cropAspect: current.cropAspect, cropCenter: current.cropCenter,
     unselected: current.unselected,
   };
 }

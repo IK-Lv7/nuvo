@@ -9,7 +9,6 @@ export type ToolKind =
   | { type: 'lipstick' }
   | { type: 'filters' }
   | { type: 'backgroundColor' }
-  | { type: 'idPhoto' }
   | { type: 'blemish' }
   | { type: 'autoEnhance' }
   | { type: 'orientation' }
@@ -63,7 +62,6 @@ export const categories: Category[] = [
   { id: 'background', title: '背景', icon: 'image-outline', tools: [
     { id: 'backgroundBlur', title: 'ぼかし', icon: 'aperture-outline', kind: intensity },
     { id: 'backgroundColor', title: '背景色', icon: 'color-palette-outline', kind: { type: 'backgroundColor' } },
-    { id: 'idPhoto', title: '証明写真', icon: 'id-card-outline', kind: { type: 'idPhoto' } },
   ] },
   { id: 'crop', title: '構図', icon: 'crop-outline', tools: [
     { id: 'orientation', title: '回転・反転', icon: 'refresh-outline', kind: { type: 'orientation' } },
@@ -118,9 +116,6 @@ export const filterOptions = [
 ];
 export const backgroundColors = [
   { id: 'white', title: '白' }, { id: 'lightBlue', title: '水色' }, { id: 'lightGray', title: 'グレー' },
-];
-export const idPhotoOptions = [
-  { id: 'passport', title: 'パスポート・マイナンバー 35×45' }, { id: 'resume', title: '履歴書 30×40' },
 ];
 
 /** 縦横比プリセット(幅 / 高さ)。CropAspect.swift と同じ値。 */

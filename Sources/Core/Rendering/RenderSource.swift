@@ -32,13 +32,4 @@ public final class RenderSource: @unchecked Sendable {
         retouch?.detectBlemishes(imageSize: image.extent.size) ?? []
     }
 
-    /// 証明写真の切り出し範囲(左上原点のピクセル座標)。顔が見つからない・画像内に収まらない場合は nil。
-    /// 複数人が写るときは、加工する人として選ばれている中で、最も大きく写っている人を本人とみなす。
-    public func idPhotoCropRect(_ spec: IDPhotoSpec, unselectedFaces: [Int] = []) -> CGRect? {
-        guard let face = FaceSelection.primary(faces, excluding: unselectedFaces) else { return nil }
-        // 髪を含む頭頂は、人物マスクから顔の中央付近の最上端を実測する。
-        let half = face.boundingBox.width * 0.3
-        let crown = subjectMask?.topEdge(columns: (face.boundingBox.midX - half)...(face.boundingBox.midX + half))
-        return IDPhotoLayout.cropRect(face: face, crown: crown, imageSize: image.extent.size, spec: spec)
-    }
 }

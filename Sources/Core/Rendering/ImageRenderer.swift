@@ -86,7 +86,7 @@ public final class ImageRenderer: @unchecked Sendable {
 
     public func render(_ source: RenderSource, parameters: AdjustmentParameters) -> CGImage? {
         let output = pipeline.apply(parameters, to: source, context: context, restorationModel: restorationModel)
-        // 切り出し(証明写真)で範囲が変わるため、出力の範囲で描画する。
+        // 構図(回転・縦横比)や高画質化で範囲が変わるため、出力の範囲で描画する。
         let extent = output.extent.isInfinite || output.extent.isNull ? source.image.extent : output.extent
         return context.createCGImage(output, from: extent)
     }

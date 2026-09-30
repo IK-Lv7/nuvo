@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { Alert, Pressable } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
-import { backgroundColors, cropOptions, filterOptions, idPhotoOptions, lipstickPresets, sliderDefault, type Tool } from '../catalog';
+import { backgroundColors, cropOptions, filterOptions, lipstickPresets, sliderDefault, type Tool } from '../catalog';
 import { hasComposition, type Params, type TextItem } from '../state';
 import { mockFaces, selectedFaces } from '../people';
 import { TextPanel } from './TextPanel';
@@ -69,13 +69,6 @@ export function ToolPanel(props: Props) {
         <View style={styles.box}>
           <Chips options={backgroundColors} selected={params.bgColor} noneTitle="そのまま"
             onSelect={(id) => onCommit((p) => ({ ...p, bgColor: id }))} />
-        </View>
-      );
-    case 'idPhoto':
-      return (
-        <View style={styles.box}>
-          <Chips options={idPhotoOptions} selected={params.idPhoto} noneTitle="なし"
-            onSelect={(id) => onCommit((p) => ({ ...p, idPhoto: id, bgColor: id && !p.bgColor ? 'white' : p.bgColor }))} />
         </View>
       );
     case 'blemish':

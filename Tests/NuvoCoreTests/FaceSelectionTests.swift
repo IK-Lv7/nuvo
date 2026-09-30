@@ -31,12 +31,6 @@ final class FaceSelectionTests: XCTestCase {
         XCTAssertEqual(FaceSelection.unselected(keeping: [], faceCount: 3), [0, 1, 2])
     }
 
-    func testPrimaryIsTheLargestSelectedFace() {
-        XCTAssertEqual(FaceSelection.primary(faces, excluding: []), faces[1])
-        XCTAssertEqual(FaceSelection.primary(faces, excluding: [1]), faces[0])
-        XCTAssertNil(FaceSelection.primary(faces, excluding: [0, 1, 2]))
-    }
-
     // MARK: タップ
 
     func testTapInsideAFaceFindsIt() {

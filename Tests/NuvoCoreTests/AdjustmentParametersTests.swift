@@ -82,11 +82,8 @@ final class AdjustmentParametersFinishTests: XCTestCase {
         XCTAssertEqual(c.backgroundBlur, 1)
     }
 
-    func testBackgroundAndIDPhotoBreakIdentity() {
+    func testAutoEnhanceBreaksIdentity() {
         var p = AdjustmentParameters()
-        p.idPhoto = .passport
-        XCTAssertFalse(p.isIdentity)
-        p = AdjustmentParameters()
         p.autoEnhance = true
         XCTAssertFalse(p.isIdentity)
     }
@@ -101,7 +98,6 @@ final class LookTests: XCTestCase {
         p.texts = [TextOverlay(text: "hi")]
         p.rotationQuarterTurns = 1
         p.cropAspect = .square
-        p.idPhoto = .passport
         return p
     }
 
@@ -113,7 +109,6 @@ final class LookTests: XCTestCase {
         XCTAssertTrue(look.texts.isEmpty)
         XCTAssertEqual(look.rotationQuarterTurns, 0)
         XCTAssertNil(look.cropAspect)
-        XCTAssertNil(look.idPhoto)
     }
 
     func testApplyingALookKeepsThisPhotosOwnContent() {

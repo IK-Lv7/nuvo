@@ -25,7 +25,6 @@ ENUM_KEYS = [
     ("Sources/Core/Rendering/TextOverlay.swift", "TextColorPreset", "textColor."),
     ("Sources/Core/Rendering/CropAspect.swift", "CropAspect", "crop."),
     ("Sources/Core/Rendering/Filters/BackgroundFilter.swift", "BackgroundColor", "background."),
-    ("Sources/Core/Rendering/IDPhoto.swift", "IDPhotoSpec", "idPhoto."),
     ("Sources/Core/Rendering/MakeupTint.swift", "LipstickPreset", "lipstick."),
     ("Sources/Core/Rendering/MakeupTint.swift", "BlushPreset", "blush."),
     ("Sources/Core/Rendering/MakeupTint.swift", "EyeshadowPreset", "eyeshadow."),
@@ -33,7 +32,7 @@ ENUM_KEYS = [
     ("Sources/Core/Rendering/Filters/CollageComposer.swift", "CollageLayout", "collageLayout."),
 ]
 # コードの中で、文字列リテラルとして直接書かれる文言の接頭辞
-STATIC_PREFIXES = "editor|empty|tool|category|filter|background|idPhoto|crop|textColor|textStyle|settings|lipstick|blush|eyeshadow|lens|stamp|collage"
+STATIC_PREFIXES = "editor|empty|tool|category|filter|background|crop|textColor|textStyle|settings|lipstick|blush|eyeshadow|lens|stamp|collage"
 
 errors: list[str] = []
 

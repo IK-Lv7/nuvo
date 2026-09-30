@@ -41,7 +41,7 @@ public final class SubjectMask: @unchecked Sendable {
     }
 
     /// 指定した横範囲(0...1)で、人物が最初に現れる行(0...1、上が 0)。
-    /// 証明写真で、髪を含む頭頂の位置を実測するために使う。
+    /// 人物の範囲がマスクに現れているかを確かめる(ペンで直した結果の検証など)。
     func topEdge(columns: ClosedRange<CGFloat>) -> CGFloat? {
         let first = max(0, Int(columns.lowerBound * CGFloat(width)))
         let last = min(width - 1, Int(columns.upperBound * CGFloat(width)))

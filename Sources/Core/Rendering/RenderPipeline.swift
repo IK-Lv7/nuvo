@@ -3,7 +3,7 @@ import CoreImage.CIFilterBuiltins
 
 /// 調整パラメータを受け取り、加工済みの画像を返す。UI の知識は持たない。
 /// 適用順: 肌補正・メイク → 背景 → 顔立ちの変形 → スポット修復 → 自動補正 → フィルター → 色調整
-///        → 仕上げ → 証明写真の切り出し → 構図(反転・回転・傾き・縦横比) → 高画質化 → 文字 → スタンプ。
+///        → 仕上げ → 構図(反転・回転・傾き・縦横比) → 高画質化 → 文字 → スタンプ。
 /// 肌補正とメイクのキャッシュは元画像の座標で作っているため、画像を動かす変形より先に適用する。
 /// そうすると唇や頬の色も変形に追従する。背景は肌補正の後(補正パッチが元の背景を戻さないため)、
 /// 変形の前(変形で動いた輪郭の隙間に新しい背景が入るため)。スポット修復はタップ位置が最終画像基準のため変形の後。
@@ -52,7 +52,6 @@ public struct RenderPipeline: Sendable {
             image = LUTFilter.apply(preset, intensity: p.filterIntensity, to: image)
         }
         image = ToneAdjustments.apply(p, to: applyColor(p, to: image))
-        image = cropForIDPhoto(p, source: source, image: image)
         image = GeometryAdjust.apply(p, to: image)
         // 高画質化は、構図を確定した後・文字を置く前に行う。先にすると拡大対象が増えて無駄に重くなり、
         // 後にすると文字が拡大前の解像度のまま引き伸ばされてぼける。
@@ -60,16 +59,6 @@ public struct RenderPipeline: Sendable {
         // 文字・スタンプは最後に、完成した構図の上に置く(位置は最終画像に対する相対値)。
         image = TextRenderer.apply(p.texts, to: image)
         return StampRenderer.apply(p.stamps ?? [], to: image)
-    }
-
-    /// 規格に合う範囲へ切り出し、原点を (0, 0) に戻す。範囲が求まらなければ切り出さない。
-    private func cropForIDPhoto(_ p: AdjustmentParameters, source: RenderSource, image: CIImage) -> CIImage {
-        guard let spec = p.idPhoto, let rect = source.idPhotoCropRect(spec, unselectedFaces: p.excludedFaces) else { return image }
-        let extent = image.extent
-        let ciRect = CGRect(x: extent.minX + rect.minX, y: extent.maxY - rect.maxY,
-                            width: rect.width, height: rect.height)
-        return image.cropped(to: ciRect)
-            .transformed(by: CGAffineTransform(translationX: -ciRect.minX, y: -ciRect.minY))
     }
 
     private func applyColor(_ p: AdjustmentParameters, to image: CIImage) -> CIImage {

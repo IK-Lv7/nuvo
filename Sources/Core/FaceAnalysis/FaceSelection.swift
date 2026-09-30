@@ -30,11 +30,6 @@ public enum FaceSelection {
             .map { $0.offset }
     }
 
-    /// 選ばれている顔のうち、最も大きく写っている顔(証明写真の対象になる)。
-    public static func primary(_ faces: [FaceLandmarks], excluding unselected: [Int]) -> FaceLandmarks? {
-        selected(faces, excluding: unselected).max { area($0.boundingBox) < area($1.boundingBox) }
-    }
-
     /// 選ばれていない顔の番号を、「選んだ顔の番号」から求める。並びは昇順にそろえる(同じ選択を同じ値にするため)。
     public static func unselected(keeping kept: Set<Int>, faceCount: Int) -> [Int] {
         (0..<faceCount).filter { !kept.contains($0) }

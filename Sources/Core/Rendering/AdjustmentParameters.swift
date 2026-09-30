@@ -70,8 +70,6 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
     /// 背景。単色は人物マスクが取れているときだけ効く。単色を選ぶとぼかしより優先される。
     public var backgroundBlur: Double = 0
     public var backgroundColor: BackgroundColor?
-    /// 選ぶと規格に合わせて切り出す(顔が見つからない・収まらない場合は切り出さない)。
-    public var idPhoto: IDPhotoSpec?
 
     /// 仕上げ。
     public var autoEnhance = false
@@ -185,7 +183,7 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
         return try? JSONDecoder().decode(AdjustmentParameters.self, from: data)
     }
 
-    /// 「ルック」として保存・適用する範囲。写真ごとの内容(修復の位置・構図・文字・スタンプ・証明写真・加工する人・切り抜きの直し)は含めない。
+    /// 「ルック」として保存・適用する範囲。写真ごとの内容(修復の位置・構図・文字・スタンプ・加工する人・切り抜きの直し)は含めない。
     public func lookOnly() -> AdjustmentParameters {
         var look = self
         look.spots = []
@@ -196,14 +194,13 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
         look.cropAspect = nil
         look.cropZoom = 1
         look.cropCenter = CGPoint(x: 0.5, y: 0.5)
-        look.idPhoto = nil
         look.unselectedFaces = nil
         look.maskStrokes = nil
         look.stamps = nil
         return look
     }
 
-    /// ルックを当てる。写真ごとの内容(修復の位置・構図・文字・スタンプ・証明写真・切り抜きの直し)は、今の写真のものを保つ。
+    /// ルックを当てる。写真ごとの内容(修復の位置・構図・文字・スタンプ・切り抜きの直し)は、今の写真のものを保つ。
     public func applyingLook(_ look: AdjustmentParameters) -> AdjustmentParameters {
         var result = look.lookOnly()
         result.spots = spots
@@ -214,7 +211,6 @@ public struct AdjustmentParameters: Equatable, Sendable, Codable {
         result.cropAspect = cropAspect
         result.cropZoom = cropZoom
         result.cropCenter = cropCenter
-        result.idPhoto = idPhoto
         result.unselectedFaces = unselectedFaces
         result.maskStrokes = maskStrokes
         result.stamps = stamps

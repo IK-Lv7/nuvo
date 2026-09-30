@@ -38,7 +38,7 @@ final class LookStore {
         }
     }
 
-    /// 写真ごとの内容(修復位置・構図・文字・証明写真)を除いて保存する。
+    /// 写真ごとの内容(修復位置・構図・文字)を除いて保存する。
     func save(name: String, parameters: AdjustmentParameters) {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
